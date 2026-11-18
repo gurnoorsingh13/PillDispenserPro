@@ -1206,7 +1206,7 @@ static void refreshInfo() {
     txt = "Scan to open the phone app\n\nhttp://" + ip + "\nhttp://" + cfg.hostname + ".local\n\n";
     if (WiFi.status() == WL_CONNECTED) txt += "Wi-Fi " + WiFi.SSID() + " (" + WiFi.RSSI() + " dBm)\n";
     txt += String("Version " FW_VERSION "\nUp ") + relTime(millis() / 1000) + "  -  " + ESP.getFreeHeap() / 1024 + " KB free";
-    txt += "\n\nMade by " TEAM_NAME "\n" TEAM_MEMBERS;
+    txt += "\nMade by " TEAM_NAME;
     setText(iTitle, ap ? "Connect your phone" : "Phone app");
   }
   if (qr != lastQr) {
