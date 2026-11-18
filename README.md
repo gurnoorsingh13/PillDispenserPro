@@ -347,7 +347,15 @@ sd-card/                 SD card layout
 
 ## Team
 **Maverick Innovators**
-- Gurnoor Singh
+
+| Member | Contribution |
+|---|---|
+| **Gurnoor Singh** | Project coordination, material procurement, firmware development and research, progress reporting, documentation, report and presentations |
+| **Ansh Sharma** | Mechanical design, 3D design and printing of the base, tray and mechanism, mechanical assembly and dimensional checks |
+| **Samarpit Gujral** | Electronics design and wiring, firmware development, electronics testing |
+| **Harman Singh Gill** | PCB work and soldering, inspection of the soldered boards, power and signal debugging |
+
+All members took part in integration, testing and demonstrations.
 
 ## License
 [MIT](LICENSE) for the PillDispenser Pro firmware and web app.

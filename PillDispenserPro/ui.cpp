@@ -320,10 +320,13 @@ static void buildBoot() {
   lv_obj_align(t, LV_ALIGN_CENTER, 0, -18);
   lv_obj_t* v = mkLabel(scrBoot, &lv_font_montserrat_16, C_BRAND, "by " TEAM_NAME);
   lv_obj_align(v, LV_ALIGN_CENTER, 0, 12);
-  lv_obj_t* who = mkLabel(scrBoot, &lv_font_montserrat_12, C_MUTED, TEAM_MEMBERS "   -   v" FW_VERSION);
-  lv_obj_set_width(who, 300);
+  lv_obj_t* who = mkLabel(scrBoot, &lv_font_montserrat_12, C_MUTED, TEAM_MEMBERS);
+  lv_label_set_long_mode(who, LV_LABEL_LONG_WRAP);
+  lv_obj_set_width(who, 290);
   lv_obj_set_style_text_align(who, LV_TEXT_ALIGN_CENTER, 0);
-  lv_obj_align(who, LV_ALIGN_BOTTOM_MID, 0, -8);
+  lv_obj_align(who, LV_ALIGN_BOTTOM_MID, 0, -6);
+  lv_obj_t* ver = mkLabel(scrBoot, &lv_font_montserrat_12, C_MUTED, "v" FW_VERSION);
+  lv_obj_align(ver, LV_ALIGN_TOP_RIGHT, -8, 6);
   bootBar = lv_bar_create(scrBoot);
   lv_obj_set_size(bootBar, 180, 6);
   lv_obj_align(bootBar, LV_ALIGN_CENTER, 0, 44);

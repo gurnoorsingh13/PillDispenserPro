@@ -11,7 +11,7 @@
 #define FW_VERSION "2.4.0"
 // Project credits (boot screen, device info, web app, Telegram, serial log)
 #define TEAM_NAME    "Maverick Innovators"
-#define TEAM_MEMBERS "Gurnoor Singh"
+#define TEAM_MEMBERS "Gurnoor Singh, Ansh Sharma, Samarpit Gujral, Harman Singh Gill"
 
 // ---------- Hardware (CYD ESP32-2432S028 + original base PCB, unchanged) ----------
 #define PIN_TOUCH_IRQ   36

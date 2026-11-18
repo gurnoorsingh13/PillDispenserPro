@@ -44,7 +44,7 @@ hist.sort()
 def status():
     tray = {"name": "Amlodipine 5 mg", "person": 0, "alerts": True, "stock": 18, "days": 7, "last": t8 + 90, "ev": 3, "evT": t8 + 240,
             "sched": "08:00 daily  14:00 daily  21:30 Mon-Fri", "st": 0, "slot": 1, "due": 0, "snooze": 0}
-    s = {"v": "2.4.0", "team": "Maverick Innovators", "members": "Gurnoor Singh", "host": "pilldisp", "ip": "192.168.1.42", "ssid": "realme 12x 5G", "rssi": -58, "ap": False, "timeOk": True,
+    s = {"v": "2.4.0", "team": "Maverick Innovators", "members": "Gurnoor Singh, Ansh Sharma, Samarpit Gujral, Harman Singh Gill", "host": "pilldisp", "ip": "192.168.1.42", "ssid": "realme 12x 5G", "rssi": -58, "ap": False, "timeOk": True,
          "now": int(time.time()), "tzName": "India", "up": 5400, "heap": 92000, "mode": "idle", "alertPerson": -1, "readyPerson": -1,
          "busy": False, "servoOk": True, "trays": 1, "cap": 30, "tg": True, "safe": False, "ai": SCEN != 'fresh', "demo": int(time.time()) + 42 if SCEN == 'demo' else 0, "ntest": "WhatsApp: sent", "chan": 5,
          "people": people, "tray": [tray], "next": {"tray": 1, "slot": 1, "t": midnight + 14 * 3600 if lt.tm_hour < 14 else midnight + 86400 + 8 * 3600},
