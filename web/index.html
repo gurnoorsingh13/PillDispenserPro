@@ -1,0 +1,1227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F3F3EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C0F0D" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PillDispenser">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230B7A53'/%3E%3Cg transform='rotate(-45 16 16)'%3E%3Crect x='5.5' y='11.5' width='21' height='9' rx='4.5' fill='%23fff'/%3E%3Cpath d='M16 11.5h6a4.5 4.5 0 0 1 0 9h-6z' fill='%239FDDBF'/%3E%3C/g%3E%3C/svg%3E">
+<title>PillDispenser</title>
+<style>
+:root{--bg:#F3F3EF;--surface:#fff;--sunk:#EDEDE8;--ink:#131815;--ink2:#434B46;--muted:#6F7771;--line:#E4E4DE;--line2:#D2D3CC;
+--brand:#0B7A53;--brand-ink:#fff;--brand-soft:#E1F0E8;--brand-text:#07673F;
+--amber:#8F5500;--amber-fill:#F0A535;--amber-soft:#FBEFD9;--red:#B42F27;--red-fill:#D63A2F;--red-soft:#FAE6E3;
+--sh:0 1px 2px rgba(19,24,21,.05);--sh2:0 10px 30px rgba(19,24,21,.18);color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0C0F0D;--surface:#151A17;--sunk:#1F2521;--ink:#ECEFEB;--ink2:#C1C7C2;--muted:#8A928C;--line:#252B27;--line2:#353C37;
+--brand:#36B47C;--brand-ink:#03170D;--brand-soft:#15291F;--brand-text:#62D4A0;
+--amber:#F1B357;--amber-fill:#F0A535;--amber-soft:#2A2213;--red:#FF8075;--red-fill:#E0473C;--red-soft:#2D1714;
+--sh:none;--sh2:0 10px 30px rgba(0,0,0,.55);color-scheme:dark}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--brand-text);font-weight:600;text-decoration:none}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}.small{font-size:13.5px}.grow{flex:1;min-width:0}
+.row{display:flex;align-items:center;gap:10px}.wrap{flex-wrap:wrap}
+code{background:var(--sunk);padding:1px 6px;border-radius:6px;font-size:12.5px}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .2s}
+.top.sc{border-bottom-color:var(--line)}
+.top .in{max-width:640px;margin:0 auto;padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top));display:flex;align-items:center;gap:10px}
+.mark{width:30px;height:30px;flex:0 0 auto;display:block}
+.brand{font-weight:700;font-size:16px;letter-spacing:-.01em}
+.conn{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink2);padding:5px 11px;border-radius:99px;background:var(--surface);border:1px solid var(--line)}
+.conn i{width:8px;height:8px;border-radius:50%;background:var(--line2)}
+.conn.on i{background:var(--brand)}.conn.off{color:var(--red)}.conn.off i{background:var(--red-fill)}
+
+main{max-width:640px;margin:0 auto;padding:0 16px calc(160px + env(safe-area-inset-bottom))}
+main>section{display:none}main>section.on{display:block;animation:in .2s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(6px)}}
+.ph{margin:12px 2px 18px}
+.ph h1{font-size:30px;line-height:1.1;letter-spacing:-.025em;margin:0;font-weight:750}
+.ph p{margin:6px 0 0;color:var(--muted)}
+.back{display:inline-flex;align-items:center;gap:2px;margin:8px 0 -2px -8px;padding:6px 10px 6px 2px;border:0;background:none;color:var(--brand-text);font-weight:600;cursor:pointer;border-radius:10px}
+.sh{display:flex;align-items:center;gap:8px;margin:28px 2px 10px}
+.sh h3{margin:0;font-size:17px;font-weight:700;letter-spacing:-.01em}
+.sh .aside{margin-left:auto;color:var(--muted);font-size:13.5px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--sh)}
+.card+.card{margin-top:10px}
+.empty{padding:18px 4px;text-align:center;color:var(--muted)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border-radius:12px;border:1px solid transparent;background:var(--sunk);color:var(--ink);font-weight:600;font-size:15px;cursor:pointer;white-space:nowrap;text-decoration:none;transition:transform .08s,filter .15s}
+.btn:active{transform:scale(.98);filter:brightness(.96)}
+.btn:disabled{opacity:.45;pointer-events:none}
+.btn.pri{background:var(--brand);color:var(--brand-ink)}
+.btn.out{background:transparent;border-color:var(--line2)}
+.btn.dng{background:var(--red-fill);color:#fff}
+.btn.soft-dng{background:var(--red-soft);color:var(--red)}
+.btn.lg{height:52px;font-size:16px;border-radius:14px;padding:0 20px}
+.btn.sm{height:36px;padding:0 12px;font-size:14px;border-radius:10px}
+.btn.ic{width:44px;padding:0}
+.btn.block{width:100%}
+.btns{display:flex;gap:8px;flex-wrap:wrap}.btns>.btn{flex:1}
+
+/* status hero */
+.hero{border-radius:22px;padding:20px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--sh)}
+.hero .eb{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:650;color:var(--muted)}
+.hero .eb svg{width:17px;height:17px}
+.hero .eb .pill{margin-left:auto}
+.pill{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:99px;font-size:13px;font-weight:650;background:var(--sunk);color:var(--ink2);white-space:nowrap}
+.hero .big{font-size:60px;font-weight:750;letter-spacing:-.04em;line-height:1;margin:12px 0 10px}
+.hero .ttl{font-size:25px;font-weight:750;letter-spacing:-.02em;line-height:1.2;margin:12px 0 4px;display:flex;align-items:center;gap:12px}
+.hero .sub{color:var(--ink2)}
+.hero .acts{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+.hero .acts .btn{flex:1}.hero .acts .btn.lg{flex:1 1 100%}
+.prog{display:flex;align-items:center;gap:14px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;color:var(--ink2)}
+.segs{display:flex;gap:4px;flex:0 0 132px}.segs i{flex:1;height:8px;border-radius:4px;background:var(--sunk)}
+.segs i.ok{background:var(--brand)}.segs i.bad{background:var(--red-fill)}.segs i.due{background:var(--amber-fill)}
+.hero.due{background:var(--amber-soft);border-color:color-mix(in srgb,var(--amber-fill) 45%,transparent)}
+.hero.due .eb{color:var(--amber)}.hero.due .pill{background:color-mix(in srgb,var(--amber-fill) 22%,transparent);color:var(--amber)}
+.hero.ready{background:var(--brand-soft);border-color:color-mix(in srgb,var(--brand) 30%,transparent)}
+.hero.ready .eb{color:var(--brand-text)}
+.hero.sos{background:var(--red-fill);border-color:var(--red-fill);color:#fff}
+.hero.sos .eb,.hero.sos .sub{color:rgba(255,255,255,.9)}
+.hero.sos .pill{background:rgba(255,255,255,.18);color:#fff}
+.hero.sos .btn{background:#fff;color:#8E1B14}
+.dotp{width:8px;height:8px;border-radius:50%;background:currentColor;position:relative;flex:0 0 auto}
+.dotp:after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid currentColor;animation:ping 1.6s ease-out infinite}
+@keyframes ping{0%{transform:scale(.5);opacity:.9}100%{transform:scale(1.5);opacity:0}}
+.spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--line2);border-top-color:var(--brand);animation:rot .9s linear infinite;flex:0 0 auto}
+@keyframes rot{to{transform:rotate(1turn)}}
+
+/* notices */
+.note{display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:var(--amber-soft);margin-bottom:10px}
+.note>svg{color:var(--amber)}.note.bad{background:var(--red-soft)}.note.bad>svg{color:var(--red)}
+.note b{display:block}.note .small{color:var(--ink2)}
+
+/* dose list */
+.list{padding:2px 16px}
+.dose{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.dose:last-child{border:0}
+.dose .t{width:46px;font-weight:700}
+.st{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;background:var(--sunk);color:var(--muted)}
+.st svg{width:16px;height:16px;stroke-width:2.3}
+.st.ok{background:var(--brand-soft);color:var(--brand-text)}.st.bad{background:var(--red-soft);color:var(--red)}.st.due{background:var(--amber-soft);color:var(--amber)}
+.dose .m{flex:1;min-width:0}.dose .m b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dose .m small{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dose .rt{font-size:13px;font-weight:600;color:var(--muted);text-align:right;white-space:nowrap}
+.dose .rt.ok{color:var(--brand-text)}.dose .rt.bad{color:var(--red)}.dose .rt.due{color:var(--amber)}
+.dayh{font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:16px 0 4px}
+.dayh:first-child{padding-top:10px}
+
+/* tray */
+.tray-top{display:flex;align-items:flex-end;gap:12px}
+.lbl{font-size:13.5px;font-weight:650;color:var(--muted);margin-bottom:4px}
+.tray .n{font-size:40px;font-weight:750;letter-spacing:-.03em;line-height:1}
+.tray .of{color:var(--muted);font-weight:500}
+.kv{text-align:right;font-size:13px;color:var(--muted)}.kv b{display:block;color:var(--ink);font-size:15px}
+.comp{display:grid;gap:3px;margin:16px 0}
+.comp i{height:22px;border-radius:4px;background:var(--sunk)}
+.comp i.f{background:var(--brand)}.comp.low i.f{background:var(--amber-fill)}.comp.empty i{background:var(--red-soft)}
+.bar{height:10px;border-radius:5px;background:var(--sunk);overflow:hidden;margin:16px 0}.bar i{display:block;height:100%;background:var(--brand)}
+
+/* message */
+.composer{display:flex;gap:8px}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:12px -16px 0;padding:0 16px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;height:34px;padding:0 13px;border-radius:99px;border:1px solid var(--line2);background:transparent;font-size:13.5px;color:var(--ink2);cursor:pointer}
+.mstate{display:flex;gap:12px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:14px}
+.mstate small{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.from{margin-top:10px;font-size:13px;color:var(--muted)}
+.linkbtn{border:0;background:none;padding:0;color:var(--brand-text);font-weight:600;cursor:pointer;font-size:inherit}
+
+/* week */
+.week{display:flex;align-items:center;gap:20px}
+.pct{font-size:36px;font-weight:750;letter-spacing:-.03em;line-height:1}
+.wdays{display:flex;gap:6px;flex:1}
+.wdays div{flex:1;text-align:center;font-size:12px;color:var(--muted);font-weight:600}
+.wdays i{display:block;height:38px;border-radius:8px;background:var(--sunk);margin-bottom:6px}
+.wdays .today i{outline:2px solid var(--ink2);outline-offset:2px}
+.c-ok{background:var(--brand)!important}.c-part{background:var(--amber-fill)!important}.c-bad{background:var(--red-fill)!important}
+
+/* setup */
+.pbar{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;margin:12px 0 4px}.pbar i{display:block;height:100%;background:var(--brand);transition:width .4s}
+.step{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer;width:100%;border-left:0;border-right:0;border-top:0;background:none;text-align:left;font-size:15px}
+.step:last-of-type{border-bottom:0}
+.step .c{width:24px;height:24px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;flex:0 0 auto;color:#fff}
+.step .c svg{width:14px;height:14px;stroke-width:3}
+.step.done{cursor:default}.step.done .c{background:var(--brand);border-color:var(--brand)}.step.done span{color:var(--muted);text-decoration:line-through}
+
+/* forms */
+.fld{display:block}
+.fld>span{display:block;font-size:13.5px;font-weight:600;color:var(--ink2);margin-bottom:6px}
+.fld+.fld,.fld+.r,.r+.fld{margin-top:14px}
+.hint{display:block;font-size:13px;color:var(--muted);margin-top:6px}
+:where(input:not([type=checkbox]):not([type=range]):not([type=file]),select,textarea){width:100%;height:46px;padding:0 13px;border-radius:12px;border:1px solid var(--line2);background:var(--surface);outline:none;font-size:16px}
+input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 20%,transparent)}
+input:disabled{opacity:.5}
+select{-webkit-appearance:none;appearance:none;padding-right:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:18px}
+input[type=range]{accent-color:var(--brand);width:150px}
+input[type=file]{font-size:14px;max-width:100%}
+.sw{position:relative;width:50px;height:30px;flex:0 0 auto;display:inline-block}
+.sw input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1;width:100%;height:100%}
+.sw span{position:absolute;inset:0;border-radius:99px;background:var(--line2);transition:.2s}
+.sw span:after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:.2s}
+.sw input:checked+span{background:var(--brand)}.sw input:checked+span:after{transform:translateX(20px)}
+.rows{padding:0 16px}
+.r{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.rows>.r:last-child,.card>.r:last-child{border-bottom:0}
+.r .l{flex:1;min-width:150px}.r .l b{display:block;font-weight:600}.r .l small{display:block;color:var(--muted);font-size:13px;line-height:1.35;margin-top:1px}
+.r input[type=number]{width:84px;text-align:center}
+.r input[type=time]{width:140px}
+input[type=file]::file-selector-button{border:0;background:var(--sunk);color:var(--ink);border-radius:10px;padding:9px 14px;margin-right:12px;font:inherit;font-weight:600;cursor:pointer}
+.r select{width:auto;min-width:100px}
+.unit{font-size:13.5px;color:var(--muted);margin-left:-4px}
+
+/* schedule */
+.cpick{display:grid;grid-template-columns:repeat(8,minmax(0,40px));gap:8px;justify-content:space-between}
+.cpick button{width:100%;aspect-ratio:1;padding:0;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;color:#fff;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.cpick button svg{width:18px;height:18px;stroke-width:3;opacity:0}
+.cpick button.on{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--ink)}.cpick button.on svg{opacity:1}
+.slot-hd{display:flex;align-items:center;gap:12px}
+input.tbig{width:auto;height:52px;font-size:26px;font-weight:700;letter-spacing:-.02em;padding:0 12px;border-color:transparent;background:var(--sunk)}
+.slot-sum{flex:1;color:var(--muted);font-size:14px;min-width:0}
+.days{display:flex;gap:6px;margin:14px 0}
+.days button{flex:1;height:40px;min-width:0;border-radius:10px;border:1px solid var(--line2);background:transparent;font-weight:650;font-size:14px;color:var(--muted);cursor:pointer;padding:0}
+.days button.on{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+
+/* history */
+.seg{display:flex;background:var(--sunk);border-radius:12px;padding:3px;gap:2px}
+.seg button{flex:1;height:36px;border:0;border-radius:10px;background:transparent;font-weight:600;font-size:14px;color:var(--ink2);cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.kpis .card{padding:14px;margin:0}
+.kpis small{display:block;color:var(--muted);font-size:12.5px;font-weight:600}
+.kpis b{display:block;font-size:27px;font-weight:750;letter-spacing:-.025em;margin:4px 0 0;line-height:1.15}
+.kpis span{font-size:12.5px;color:var(--muted)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal div{aspect-ratio:1;border-radius:9px;display:grid;place-items:center;font-size:12.5px;font-weight:600;background:var(--sunk);color:var(--muted)}
+.cal .h{background:none;aspect-ratio:auto;font-size:12px;padding-bottom:2px}
+.cal .x{background:none}
+.cal .c-ok,.cal .c-bad{color:#fff}.cal .c-part{color:#3A2500}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--muted)}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:6px;vertical-align:-1px}
+
+/* settings */
+.dev{display:flex;align-items:center;gap:14px}
+.dev .mark{width:44px;height:44px}
+.dev b{display:block;font-size:17px}.dev small{display:block;color:var(--muted);font-size:13.5px}
+.tag{display:inline-flex;align-items:center;font-size:12.5px;font-weight:650;height:24px;padding:0 9px;border-radius:99px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.tag.on{background:var(--brand-soft);color:var(--brand-text)}.tag.warn{background:var(--amber-soft);color:var(--amber)}
+.nav-list{padding:0;overflow:hidden}
+.li{display:flex;align-items:center;gap:14px;padding:12px 16px;border:0;border-bottom:1px solid var(--line);cursor:pointer;background:none;width:100%;text-align:left;color:var(--ink)}
+.li:last-child{border-bottom:0}.li:active{background:var(--sunk)}
+.li .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--sunk);color:var(--ink2);flex:0 0 auto}
+.li .tx{flex:1;min-width:0}.li .tx b{display:block;font-weight:600}
+.li .tx small{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chev{color:var(--muted);width:18px!important;height:18px!important}
+details.ch{padding:0;overflow:hidden}
+details.ch summary{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;list-style:none}
+details.ch summary::-webkit-details-marker{display:none}
+details.ch summary .chev{transition:transform .2s}details.ch[open] summary .chev{transform:rotate(90deg)}
+details.ch summary b{display:block;font-weight:600}details.ch summary small{display:block;color:var(--muted);font-size:13px}
+.svc{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:#fff;flex:0 0 auto}
+.chb{padding:14px 16px 16px;border-top:1px solid var(--line)}
+ol.how{margin:0 0 16px;padding-left:20px;color:var(--ink2);font-size:14px}ol.how li{margin:4px 0}
+.result{margin:12px 2px 0;font-size:14px;font-weight:600;min-height:1.4em}
+table.matrix{width:100%;border-collapse:collapse;font-size:14px}
+.matrix td,.matrix th{padding:11px 0;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.matrix td+td,.matrix th+th{padding-left:12px}
+.matrix tr:last-child td{border:0}.matrix th{color:var(--muted);font-size:12.5px;font-weight:650}
+.kgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 12px;font-size:14px}
+.kgrid small{display:block;color:var(--muted);font-size:12.5px}.kgrid b{font-weight:600;word-break:break-all}
+.net{display:flex;align-items:center;gap:10px;padding:11px 10px;border-radius:10px;cursor:pointer}
+.net:hover,.net.sel{background:var(--sunk)}
+details.adv{margin-top:12px}
+details.adv summary{cursor:pointer;font-weight:600;padding:10px 2px;color:var(--ink2)}
+.upbar{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;margin-top:12px}.upbar i{display:block;height:100%;width:0;background:var(--brand);transition:width .2s}
+
+/* nav, save bar, toast, sheet */
+nav.tabs{position:fixed;z-index:30;left:0;right:0;bottom:0;background:var(--surface);background:color-mix(in srgb,var(--surface) 94%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs button{position:relative;border:0;background:none;height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer}
+nav.tabs .ib{width:58px;height:30px;border-radius:99px;display:grid;place-items:center;transition:background .15s}
+nav.tabs button.on{color:var(--ink)}nav.tabs button.on .ib{background:var(--brand-soft);color:var(--brand-text)}
+nav.tabs .badge{position:absolute;top:9px;left:calc(50% + 9px);width:10px;height:10px;border-radius:50%;background:var(--red-fill);border:2px solid var(--surface);display:none}
+.savebar{position:fixed;z-index:31;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translate(-50%,16px);width:min(608px,calc(100% - 24px));display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;border-radius:16px;background:var(--ink);color:var(--bg);box-shadow:var(--sh2);opacity:0;pointer-events:none;transition:.2s;font-weight:600}
+.savebar.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.savebar .btn{height:38px}.savebar .btn.ghost{background:transparent;color:inherit;opacity:.75}
+#toast{position:fixed;z-index:40;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,10px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:600;font-size:14px;opacity:0;transition:.2s;pointer-events:none;width:max-content;max-width:calc(100% - 32px);text-align:center;box-shadow:var(--sh2)}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+body.dirty #toast{bottom:calc(140px + env(safe-area-inset-bottom))}
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(8,12,10,.5);display:none;align-items:flex-end;justify-content:center}
+.scrim.on{display:flex;animation:fade .15s}
+@keyframes fade{from{opacity:0}}
+.sheet{width:100%;max-width:520px;max-height:92vh;overflow:auto;background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:var(--sh2);animation:up .25s cubic-bezier(.2,.8,.2,1)}
+@media(min-width:600px){.scrim{align-items:center}.sheet{border-radius:24px}}
+@keyframes up{from{transform:translateY(40px);opacity:.3}}
+.sheet h2{margin:0 0 6px;font-size:22px;letter-spacing:-.02em}
+.sheet>p{margin:0;color:var(--ink2)}
+.sheet .btns{margin-top:22px}
+.steps-l{list-style:none;padding:0;margin:18px 0 0;counter-reset:s}
+.steps-l li{display:flex;gap:12px;padding:8px 0}
+.steps-l li:before{counter-increment:s;content:counter(s);width:26px;height:26px;border-radius:50%;background:var(--brand-soft);color:var(--brand-text);display:grid;place-items:center;font-weight:700;font-size:13px;flex:0 0 auto}
+.steps-l b{display:block}.steps-l span{color:var(--muted);font-size:14px}
+.stepper{display:flex;align-items:center;justify-content:center;gap:22px;margin:10px 0 0}
+.stepper .btn{width:56px;height:56px;border-radius:50%;padding:0}
+.stepper output{font-size:46px;font-weight:750;min-width:84px;text-align:center;letter-spacing:-.03em}
+/* AI */
+.ai-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto;background:var(--brand-soft);color:var(--brand-text)}
+.scan b{display:block;font-size:16px}.scan small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px}
+.answer{margin-top:14px;padding:14px;border-radius:14px;background:var(--sunk);font-size:15px;line-height:1.5}
+.answer .who{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:650;color:var(--brand-text);margin-bottom:6px}
+.answer .who svg{width:15px;height:15px}
+.answer small{display:block;margin-top:8px;color:var(--muted);font-size:12px}
+.thinking{display:flex;align-items:center;gap:10px;color:var(--muted)}
+.thumb{width:100%;max-height:150px;object-fit:cover;border-radius:12px;margin:14px 0 4px;background:var(--sunk)}
+.dose-edit{display:grid;grid-template-columns:142px 1fr;gap:8px;margin-top:8px}
+.tag.ai{background:var(--brand-soft);color:var(--brand-text)}
+/* live dashboard */
+body.live .top,body.live nav.tabs{display:none}
+body.live main{max-width:1280px;padding:20px 24px 40px}
+.lv-top{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.lv-top .brand{font-size:20px}.lv-clock{font-size:34px;font-weight:750;letter-spacing:-.02em;margin-left:auto}
+.lv-live{display:inline-flex;align-items:center;gap:7px;color:var(--red);font-weight:700;font-size:13px;letter-spacing:.06em}
+.lv-grid{display:grid;gap:16px}
+@media(min-width:900px){.lv-grid{grid-template-columns:1.25fr 1fr}}
+.lv-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.lv-kpis .card{padding:16px}.lv-kpis small{display:block;color:var(--muted);font-weight:600;font-size:13px}.lv-kpis b{display:block;font-size:34px;font-weight:750;letter-spacing:-.03em}
+.feed .ev{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.feed .ev:last-child{border:0}.feed .ev .t{width:52px;font-weight:700}
+.feed .ev.new{animation:flash 2.5s ease-out}
+@keyframes flash{0%{background:var(--brand-soft)}100%{background:transparent}}
+.printonly{display:none}
+@media print{.top,nav.tabs,.savebar,#toast,.noprint,.back{display:none!important}html,body{background:#fff;color:#000}.card{box-shadow:none;border-color:#ccc;break-inside:avoid}.printonly{display:block}main{padding:0}main>section.on{animation:none}}
+</style>
+</head>
+<body>
+<header class="top" id="top"><div class="in">
+  <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--brand)"/><g transform="rotate(-45 16 16)"><rect x="5.5" y="11.5" width="21" height="9" rx="4.5" fill="#fff"/><path d="M16 11.5h6a4.5 4.5 0 0 1 0 9h-6z" fill="#9FDDBF"/></g></svg>
+  <span class="brand">PillDispenser</span>
+  <span class="conn" id="conn"><i></i><span>Connecting</span></span>
+</div></header>
+<main>
+<!-- ================= TODAY ================= -->
+<section id="home" class="on">
+  <div class="ph"><h1>Today</h1><p id="todayDate">&nbsp;</p></div>
+  <div id="notes"></div>
+  <div id="hero" class="hero"><div class="eb">Loading…</div><div class="big">&nbsp;</div></div>
+  <div id="setup"></div>
+  <div class="sh"><h3>Today's doses</h3><span class="aside" id="todayAside"></span></div>
+  <div class="card list" id="today"></div>
+  <div class="sh"><h3>Pill tray</h3></div>
+  <div class="card tray" id="tray"></div>
+  <div class="sh"><h3 id="askHd">Ask the assistant</h3><span class="tag ai">AI</span></div>
+  <div class="card">
+    <div class="composer"><input id="askText" maxlength="300" placeholder="Ask anything, in any language" enterkeyhint="send" onkeydown="if(event.key==='Enter')ask()"><button class="btn pri ic" onclick="ask()" aria-label="Ask"><svg class="i" viewBox="0 0 24 24" data-i="spark"></svg></button></div>
+    <div class="chips" id="askChips"></div>
+    <div id="askOut"></div>
+  </div>
+  <div class="sh"><h3 id="msgHd">Message on the screen</h3></div>
+  <div class="card">
+    <div class="composer"><input id="msgText" maxlength="160" placeholder="Write a short message" enterkeyhint="send" onkeydown="if(event.key==='Enter')sendMsg()"><button class="btn pri ic" onclick="sendMsg()" aria-label="Send"><svg class="i" viewBox="0 0 24 24" data-i="send"></svg></button></div>
+    <div class="chips" id="quick"></div>
+    <div class="from">Sending as <b id="myName"></b> · <button class="linkbtn" onclick="nameSheet()">Change</button></div>
+    <div class="mstate" id="mstate"></div>
+  </div>
+  <div class="sh"><h3>Last 7 days</h3><button class="linkbtn aside small" style="margin-left:auto" onclick="go('hist')">Full history</button></div>
+  <div class="card" id="week"></div>
+</section>
+
+<!-- ================= SCHEDULE ================= -->
+<section id="sched">
+  <div class="ph"><h1>Schedule</h1><p>What to take, and when.</p></div>
+  <div class="card scan">
+    <div class="row" style="align-items:flex-start;gap:14px"><span class="ai-ic"><svg class="i" viewBox="0 0 24 24" data-i="spark"></svg></span><div class="grow"><b>Scan a prescription</b><small>Take a photo of the prescription or the medicine box. AI fills in the schedule, you check it.</small></div></div>
+    <label class="btn pri block" style="margin-top:14px"><svg class="i" viewBox="0 0 24 24" data-i="camera"></svg>Take a photo<input type="file" accept="image/*" capture="environment" hidden onchange="scanFile(this)"></label>
+  </div>
+  <div class="card" id="medCard"></div>
+  <div class="sh"><h3>Dose times</h3><label class="row aside" style="gap:10px"><span>Reminders</span><span class="sw"><input type="checkbox" id="remSw" onchange="cfg.tray[0].alerts=this.checked;markDirty();renderSched()"><span></span></span></label></div>
+  <div id="slots"></div>
+  <div class="sh"><h3>Patient</h3></div>
+  <div class="card" id="patCard"></div>
+</section>
+
+<!-- ================= HISTORY ================= -->
+<section id="hist">
+  <div class="printonly" id="printHd"></div>
+  <div class="ph noprint"><h1>History</h1><p>How the doses went.</p></div>
+  <div class="seg noprint" id="range"><button data-v="7">7 days</button><button data-v="30" class="on">30 days</button><button data-v="90">90 days</button></div>
+  <div class="kpis" id="kpi"></div>
+  <div class="card noprint" style="margin-top:12px" id="sumCard">
+    <div class="row"><span class="ai-ic"><svg class="i" viewBox="0 0 24 24" data-i="spark"></svg></span><div class="grow"><b>AI summary</b><div class="small muted">How the doses went, any pattern, and one tip.</div></div><button class="btn sm" onclick="aiSummary()">Write it</button></div>
+    <div id="sumOut"></div>
+  </div>
+  <div class="sh"><h3>Calendar</h3></div>
+  <div class="card"><div class="cal" id="cal"></div>
+    <div class="legend"><span><i class="c-ok"></i>All taken</span><span><i class="c-part"></i>Some</span><span><i class="c-bad"></i>Missed</span></div></div>
+  <div class="btns noprint" style="margin-top:12px"><button class="btn out" onclick="window.print()"><svg class="i" viewBox="0 0 24 24" data-i="print"></svg>Doctor report</button><button class="btn out" onclick="exportCsv()"><svg class="i" viewBox="0 0 24 24" data-i="file"></svg>Export CSV</button></div>
+  <div class="sh"><h3>Activity</h3></div>
+  <div class="card list" id="events"></div>
+</section>
+
+<!-- ================= SETTINGS ================= -->
+<section id="set">
+  <div class="ph"><h1>Settings</h1></div>
+  <div class="card dev" id="devCard"></div>
+  <div class="sh"><h3>Care</h3></div>
+  <div class="card nav-list">
+    <button class="li" onclick="go('set-alerts')"><span class="ic"><svg class="i" viewBox="0 0 24 24" data-i="bell"></svg></span><span class="tx"><b>Family alerts</b><small id="sumAlerts"></small></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></button>
+    <button class="li" onclick="go('set-rules')"><span class="ic"><svg class="i" viewBox="0 0 24 24" data-i="shield"></svg></span><span class="tx"><b>Dose safety</b><small id="sumRules"></small></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></button>
+    <button class="li" onclick="go('set-tray')"><span class="ic"><svg class="i" viewBox="0 0 24 24" data-i="tray"></svg></span><span class="tx"><b>Pill tray</b><small id="sumTray"></small></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></button>
+    <button class="li" onclick="go('set-ai')"><span class="ic"><svg class="i" viewBox="0 0 24 24" data-i="spark"></svg></span><span class="tx"><b>AI assistant</b><small id="sumAi"></small></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></button>
+    <button class="li" onclick="go('set-demo')"><span class="ic"><svg class="i" viewBox="0 0 24 24" data-i="play"></svg></span><span class="tx"><b>Demo &amp; live dashboard</b><small>Test dose, party mode, shabad, projector view</small></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></button>
+  </div>
+  <div class="sh"><h3>Device</h3></div>
+  <div class="card nav-list">
+    <button class="li" onclick="go('set-sound')"><span class="ic"><svg class="i" viewBox="0 0 24 24" data-i="vol"></svg></span><span class="tx"><b>Sound &amp; screen</b><small id="sumSound"></small></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></button>
+    <button class="li" onclick="go('set-time')"><span class="ic"><svg class="i" viewBox="0 0 24 24" data-i="globe"></svg></span><span class="tx"><b>Date &amp; time</b><small id="sumTime"></small></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></button>
+    <button class="li" onclick="go('set-wifi')"><span class="ic"><svg class="i" viewBox="0 0 24 24" data-i="wifi"></svg></span><span class="tx"><b>Wi-Fi</b><small id="sumWifi"></small></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></button>
+    <button class="li" onclick="go('set-sec')"><span class="ic"><svg class="i" viewBox="0 0 24 24" data-i="lock"></svg></span><span class="tx"><b>Security</b><small id="sumSec"></small></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></button>
+    <button class="li" onclick="go('set-sys')"><span class="ic"><svg class="i" viewBox="0 0 24 24" data-i="chip"></svg></span><span class="tx"><b>Firmware &amp; backup</b><small id="sumSys"></small></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></button>
+  </div>
+  <p class="small muted" id="credits" style="text-align:center;margin:20px 0 0"></p>
+  <div class="btns" style="margin-top:16px"><button class="btn out" onclick="act('identify',{},'The dispenser is flashing its lights')"><svg class="i" viewBox="0 0 24 24" data-i="locate"></svg>Find dispenser</button><button class="btn out" onclick="restart()"><svg class="i" viewBox="0 0 24 24" data-i="power"></svg>Restart</button></div>
+</section>
+
+<!-- family alerts -->
+<section id="set-alerts">
+  <button class="back" onclick="go('set')"><svg class="i" viewBox="0 0 24 24" data-i="back"></svg>Settings</button>
+  <div class="ph"><h1>Family alerts</h1><p>Who hears about doses, missed pills and SOS. Turn on as many as you like.</p></div>
+  <details class="ch card"><summary><span class="svc" style="background:#229ED9"><svg class="i" viewBox="0 0 24 24" data-i="tg"></svg></span><span class="grow"><b>Telegram</b><small>Reminders with buttons · two-way</small></span><span class="tag" data-st="1"></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></summary>
+    <div class="chb">
+      <ol class="how"><li>In Telegram open <b>@BotFather</b>, send <code>/newbot</code> and copy the token.</li><li>Paste it below and save.</li><li>Send <code>/start</code> to your bot. It replies with your chat id.</li></ol>
+      <label class="fld"><span>Bot token</span><input data-k="tgToken" type="password" autocomplete="off"></label>
+      <label class="fld"><span>Patient chat ids</span><input data-k="tgPatient" inputmode="numeric" placeholder="e.g. 123456789"><small class="hint">Get dose reminders. Separate several with commas.</small></label>
+      <label class="fld"><span>Family chat ids</span><input data-k="tgCare" inputmode="numeric"><small class="hint">Get late, missed, low-stock and SOS alerts.</small></label>
+      <div class="r" style="margin-top:6px"><div class="l"><b>Dose reminders</b><small>"Time for your pills" with buttons</small></div><span class="sw"><input type="checkbox" data-k="tgDue"><span></span></span></div>
+      <div class="r"><div class="l"><b>Daily report</b><small>Doses and stock, once a day</small></div><span class="sw"><input type="checkbox" data-k="tgDaily"><span></span></span></div>
+      <div class="r"><div class="l"><b>Send the report at</b></div><input type="time" id="dailyAt"></div>
+      <button class="btn" style="margin-top:6px" onclick="ntest(1)">Send a test</button>
+    </div></details>
+  <details class="ch card"><summary><span class="svc" style="background:#1FA855"><svg class="i" viewBox="0 0 24 24" data-i="wa"></svg></span><span class="grow"><b>WhatsApp</b><small>Family alerts on WhatsApp</small></span><span class="tag" data-st="4"></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></summary>
+    <div class="chb">
+      <ol class="how"><li>Follow the 1-minute <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" rel="noopener">CallMeBot WhatsApp setup</a> to get a free key.</li><li>Enter the number with country code and the key, then save.</li></ol>
+      <label class="fld"><span>Phone number</span><input data-k="waPhone" inputmode="tel" placeholder="+919876543210"></label>
+      <label class="fld"><span>API key</span><input data-k="waKey" type="password" autocomplete="off"></label>
+      <button class="btn" style="margin-top:14px" onclick="ntest(3)">Send a test</button>
+    </div></details>
+  <details class="ch card"><summary><span class="svc" style="background:#2F6F62"><svg class="i" viewBox="0 0 24 24" data-i="bell"></svg></span><span class="grow"><b>Phone notifications</b><small>Instant push with the free ntfy app</small></span><span class="tag" data-st="2"></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></summary>
+    <div class="chb">
+      <ol class="how"><li>Install <b>ntfy</b> on Android or iPhone.</li><li>Tap <b>Generate</b> below and save.</li><li>Open the link on the phone, or subscribe to the same topic in the app.</li></ol>
+      <label class="fld"><span>Topic</span><input data-k="ntfyTopic" id="ntfyTopic" autocomplete="off"><small class="hint">Anyone who knows the topic can read the alerts, so keep it hard to guess.</small></label>
+      <div class="btns" style="margin-top:14px"><button class="btn" onclick="genTopic()">Generate</button><a class="btn" id="ntfyLink" target="_blank" rel="noopener">Open on phone</a><button class="btn" onclick="ntest(2)">Send a test</button></div>
+    </div></details>
+  <details class="ch card"><summary><span class="svc" style="background:#D63A2F"><svg class="i" viewBox="0 0 24 24" data-i="phone"></svg></span><span class="grow"><b>Voice call</b><small>A real call for SOS and missed doses</small></span><span class="tag" data-st="8"></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></summary>
+    <div class="chb">
+      <ol class="how"><li>Allow CallMeBot once in Telegram: <a href="https://www.callmebot.com/blog/telegram-phone-call-using-your-browser/" target="_blank" rel="noopener">setup guide</a>.</li><li>Enter the family member's Telegram username and save.</li></ol>
+      <label class="fld"><span>Telegram username</span><input data-k="callUser" placeholder="@ahmed" autocomplete="off"></label>
+      <button class="btn" style="margin-top:14px" onclick="ntest(4)">Test call</button>
+    </div></details>
+  <details class="ch card"><summary><span class="svc" style="background:#3F4842"><svg class="i" viewBox="0 0 24 24" data-i="link"></svg></span><span class="grow"><b>Webhook</b><small>Home Assistant, IFTTT, Google Sheets…</small></span><span class="tag" data-st="16"></span><svg class="i chev" viewBox="0 0 24 24" data-i="chev"></svg></summary>
+    <div class="chb">
+      <p class="small muted" style="margin:0 0 14px">Every alert is sent as JSON: <code>{"device","time","level","to","text"}</code>. Level 0 = info, 1 = important, 2 = urgent.</p>
+      <label class="fld"><span>URL</span><input data-k="hookUrl" placeholder="https://…" inputmode="url" autocomplete="off"></label>
+      <button class="btn" style="margin-top:14px" onclick="ntest(5)">Send a test</button>
+    </div></details>
+  <div class="result" id="ntest"></div>
+  <div class="sh"><h3>Who gets what</h3></div>
+  <div class="card" style="padding-top:4px;padding-bottom:4px;overflow-x:auto"><table class="matrix"><thead><tr><th>When</th><th>Who</th><th>How</th></tr></thead><tbody>
+    <tr><td>Time for pills</td><td>Patient</td><td>Telegram, push</td></tr>
+    <tr><td>Taken, skipped, refilled</td><td>Family</td><td>Telegram, push, WhatsApp</td></tr>
+    <tr><td>Late, not confirmed, low stock, no activity</td><td>Family</td><td>Telegram, push, WhatsApp</td></tr>
+    <tr><td><b>Missed dose, SOS</b></td><td>Everyone</td><td>All of them <b>+ voice call</b></td></tr>
+  </tbody></table></div>
+  <div class="sh"><h3>Safety checks</h3></div>
+  <div class="card rows">
+    <div class="r"><div class="l"><b>Daily check-in</b><small>Tell the family if there's no touch, button press or dose by a set time</small></div><span class="sw"><input type="checkbox" data-k="checkin"><span></span></span></div>
+    <div class="r"><div class="l"><b>Check by</b></div><input type="time" id="checkinAt"></div>
+    <div class="r"><div class="l"><b>SOS drill</b><small>Sends a real SOS to everyone, for practice. On the dispenser: hold the button 5 s, or hold SOS on the screen.</small></div><button class="btn soft-dng" onclick="sosDrill()">Start drill</button></div>
+  </div>
+</section>
+
+<!-- AI assistant -->
+<section id="set-ai">
+  <button class="back" onclick="go('set')"><svg class="i" viewBox="0 0 24 24" data-i="back"></svg>Settings</button>
+  <div class="ph"><h1>AI assistant</h1><p>Scan prescriptions, ask questions in any language, and get summaries. Uses Groq's free AI service.</p></div>
+  <div class="card">
+    <ol class="how"><li>Open <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a> and sign in. It's free.</li><li>Tap <b>Create API key</b>, copy it, paste it below and save.</li><li>Tap <b>Test</b>.</li></ol>
+    <label class="fld"><span>Groq API key</span><input data-k="aiKey" type="password" autocomplete="off" placeholder="gsk_…"></label>
+    <button class="btn" style="margin-top:14px" onclick="aiTest()">Test</button>
+    <div class="result" id="aiRes"></div>
+  </div>
+  <div class="sh"><h3>What it does</h3></div>
+  <div class="card rows">
+    <div class="r"><span class="ai-ic"><svg class="i" viewBox="0 0 24 24" data-i="camera"></svg></span><div class="l"><b>Reads prescriptions</b><small>Schedule → Scan a prescription. You check before saving.</small></div></div>
+    <div class="r"><span class="ai-ic"><svg class="i" viewBox="0 0 24 24" data-i="msg"></svg></span><div class="l"><b>Answers questions</b><small>On the Today page, or just message the Telegram bot: "Did Papa take his pills today?", "Dawai kab khatam hogi?"</small></div></div>
+    <div class="r"><span class="ai-ic"><svg class="i" viewBox="0 0 24 24" data-i="chart"></svg></span><div class="l"><b>Writes summaries</b><small>History → AI summary.</small></div></div>
+  </div>
+  <details class="adv"><summary>Models</summary>
+  <div class="card">
+    <label class="fld"><span>Text model</span><input data-k="aiModel" list="aiModels" autocomplete="off"></label>
+    <label class="fld"><span>Photo model (must accept images)</span><input data-k="aiVision" list="aiModels" autocomplete="off"></label>
+    <datalist id="aiModels"></datalist>
+    <small class="hint">Groq sometimes retires models. Tap Test to see which ones your key can use.</small>
+  </div></details>
+  <p class="small muted" style="margin:16px 2px">Photos and questions are sent to Groq to be answered. The AI can make mistakes, so always check against the prescription and ask a doctor about medical questions.</p>
+</section>
+
+<!-- demo -->
+<section id="set-demo">
+  <button class="back" onclick="go('set')"><svg class="i" viewBox="0 0 24 24" data-i="back"></svg>Settings</button>
+  <div class="ph"><h1>Demo &amp; live dashboard</h1><p>Show the whole system working in a couple of minutes.</p></div>
+  <div class="card rows">
+    <div class="r"><div class="l"><b>Test dose in 1 minute</b><small>The real cycle: alarm, dispense, "I took them", history and family alerts.</small></div><button class="btn sm pri" onclick="demo(60,0)">Start</button></div>
+    <div class="r"><div class="l"><b>Show a missed dose</b><small>A test dose in 30 seconds. Leave it: the family is told after 1 minute and it counts as missed after 2.</small></div><button class="btn sm" onclick="demo(30,1)">Start</button></div>
+    <div class="r"><div class="l"><b>Live dashboard</b><small>Full-screen view for a laptop or projector. Updates the moment anything happens.</small></div><button class="btn sm" onclick="go('live')">Open</button></div>
+    <div class="r"><div class="l"><b>Party mode</b><small>Your songs from SD folder <code>/02/</code> (<code>001.mp3</code>, <code>002.mp3</code>…) on repeat, disco lights and a colourful screen. Any dose or SOS stops it.</small></div><div class="btns"><button class="btn sm pri" onclick="act('party',{n:1},'Party mode on')">Start</button><button class="btn sm" onclick="act('party',{n:0},'Party stopped')">Stop</button></div></div>
+    <div class="r"><div class="l"><b>Shabad Gurbani</b><small>Plays every shabad in SD folder <code>/03/</code> (<code>001.mp3</code>, <code>002.mp3</code>…) in turn, with a calm saffron light. Any dose or SOS stops it.</small></div><div class="btns"><button class="btn sm pri" onclick="act('party',{n:2},'Shabad playing')">Play</button><button class="btn sm" onclick="act('party',{n:0},'Shabad stopped')">Stop</button></div></div>
+    <div class="r"><div class="l"><b>SOS drill</b><small>Sends a real SOS to everyone on the alert list.</small></div><button class="btn sm soft-dng" onclick="sosDrill()">Start</button></div>
+  </div>
+</section>
+
+<!-- live dashboard (projector) -->
+<section id="live">
+  <div class="lv-top"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--brand)"/><g transform="rotate(-45 16 16)"><rect x="5.5" y="11.5" width="21" height="9" rx="4.5" fill="#fff"/><path d="M16 11.5h6a4.5 4.5 0 0 1 0 9h-6z" fill="#9FDDBF"/></g></svg>
+    <span class="brand" id="lvName">PillDispenser</span><span class="lv-live"><span class="dotp"></span>LIVE</span>
+    <span class="lv-clock num" id="lvClock"></span><button class="btn sm out" onclick="go('set-demo')">Close</button></div>
+  <div class="lv-grid">
+    <div>
+      <div id="lvHero" class="hero"></div>
+      <div class="lv-kpis" id="lvKpi"></div>
+      <div class="sh"><h3>Today's doses</h3></div>
+      <div class="card list" id="lvToday"></div>
+    </div>
+    <div class="card"><div class="row" style="margin-bottom:4px"><h3 style="margin:0;font-size:17px">Live activity</h3><span class="grow"></span><span class="small muted">from the dispenser</span></div>
+      <div class="feed" id="lvFeed"></div></div>
+  </div>
+</section>
+
+<!-- dose safety -->
+<section id="set-rules">
+  <button class="back" onclick="go('set')"><svg class="i" viewBox="0 0 24 24" data-i="back"></svg>Settings</button>
+  <div class="ph"><h1>Dose safety</h1><p>Reminders, missed doses and overdose protection.</p></div>
+  <div class="sh"><h3>Reminders</h3></div>
+  <div class="card rows">
+    <div class="r"><div class="l"><b>Repeat the alarm every</b></div><input type="number" min="1" max="30" data-k="remindEvery"><span class="unit">min</span></div>
+    <div class="r"><div class="l"><b>Snooze for</b></div><input type="number" min="1" max="60" data-k="snoozeMin"><span class="unit">min</span></div>
+    <div class="r"><div class="l"><b>Tell the family when late by</b><small>0 = never</small></div><input type="number" min="0" max="600" data-k="escalateAfter"><span class="unit">min</span></div>
+    <div class="r"><div class="l"><b>Count a dose as missed after</b></div><input type="number" min="10" max="720" data-k="missAfter"><span class="unit">min</span></div>
+  </div>
+  <div class="sh"><h3>Confirmation</h3></div>
+  <div class="card rows">
+    <div class="r"><div class="l"><b>Ask "Did you take them?"</b><small>Shows an "I took them" button after dispensing</small></div><span class="sw"><input type="checkbox" data-k="requireConfirm"><span></span></span></div>
+    <div class="r"><div class="l"><b>Tell the family if not confirmed in</b></div><input type="number" min="1" max="240" data-k="confirmTimeout"><span class="unit">min</span></div>
+  </div>
+  <div class="sh"><h3>Overdose protection</h3></div>
+  <div class="card rows">
+    <div class="r"><div class="l"><b>Minimum time between doses</b><small>0 = off</small></div><input type="number" min="0" max="1440" data-k="minGap"><span class="unit">min</span></div>
+    <div class="r"><div class="l"><b>Most doses in 24 hours</b><small>For as-needed medicine · 0 = no limit</small></div><input type="number" min="0" max="8" data-k="maxPerDay"></div>
+    <div class="r"><div class="l"><b>Early dose window</b><small>A dose given this early counts as the next scheduled one</small></div><input type="number" min="0" max="240" data-k="earlyWindow"><span class="unit">min</span></div>
+  </div>
+</section>
+
+<!-- pill tray -->
+<section id="set-tray">
+  <button class="back" onclick="go('set')"><svg class="i" viewBox="0 0 24 24" data-i="back"></svg>Settings</button>
+  <div class="ph"><h1>Pill tray</h1><p>Stock warnings and tray tools.</p></div>
+  <div class="card rows">
+    <div class="r"><div class="l"><b>Compartments</b><small>Doses in a full tray</small></div><input type="number" min="1" max="60" data-k="capacity"></div>
+    <div class="r"><div class="l"><b>Warn when stock is low</b><small>Days of pills left</small></div><input type="number" min="0" max="30" data-k="lowStockDays"><span class="unit">days</span></div>
+  </div>
+  <div class="sh"><h3>Tray tools</h3></div>
+  <div class="card">
+    <p class="small muted" style="margin:0 0 12px">Use these if the empty compartment isn't over the cup opening.</p>
+    <div class="btns"><button class="btn" onclick="act('align',{tray:1},'Aligning…')">Align ½ step</button><button class="btn" onclick="act('advance',{tray:1,n:1},'Moving…')">Next compartment</button><button class="btn" onclick="refillSheet()">Refill…</button></div>
+  </div>
+  <details class="adv"><summary>Advanced: mechanism</summary>
+  <div class="card rows">
+    <div class="r"><div class="l"><b>Servo rest angle</b></div><input type="number" min="0" max="180" data-k="servoRest"><span class="unit">°</span></div>
+    <div class="r"><div class="l"><b>Servo push angle</b></div><input type="number" min="0" max="180" data-k="servoPush"><span class="unit">°</span></div>
+    <div class="r"><div class="l"><b>Push time</b></div><input type="number" min="100" max="2000" data-k="pushMs"><span class="unit">ms</span></div>
+    <div class="r"><div class="l"><b>Rest time</b></div><input type="number" min="100" max="2000" data-k="restMs"><span class="unit">ms</span></div>
+    <div class="r"><div class="l"><b>Pushes per compartment</b></div><input type="number" min="1" max="6" data-k="cyclesPerDose"></div>
+  </div></details>
+</section>
+
+<!-- sound & screen -->
+<section id="set-sound">
+  <button class="back" onclick="go('set')"><svg class="i" viewBox="0 0 24 24" data-i="back"></svg>Settings</button>
+  <div class="ph"><h1>Sound &amp; screen</h1></div>
+  <div class="sh"><h3>Sound</h3></div>
+  <div class="card rows">
+    <div class="r"><div class="l"><b>Volume</b></div><input type="range" min="0" max="30" data-k="volume"></div>
+    <div class="r"><div class="l"><b>Mute all sounds</b></div><span class="sw"><input type="checkbox" data-k="mute"><span></span></span></div>
+    <div class="r"><div class="l" style="flex-basis:100%"><b>Test the sounds</b><small>Custom voices go on the SD card as <code>/01/001.mp3</code>, <code>/01/002.mp3</code>…</small></div><div class="btns" style="flex:1"><button class="btn sm" onclick="act('sound',{n:1},'Playing')">Alarm</button><button class="btn sm" onclick="act('sound',{n:2},'Playing')">Pills ready</button></div></div>
+  </div>
+  <div class="sh"><h3>Quiet hours</h3></div>
+  <div class="card rows">
+    <div class="r"><div class="l"><b>Party mode</b><small>Your songs from SD folder <code>/02/</code> (<code>001.mp3</code>, <code>002.mp3</code>…) on repeat, disco lights and a colourful screen. Any dose or SOS stops it.</small></div><div class="btns"><button class="btn sm pri" onclick="act('party',{n:1},'Party mode on')">Start</button><button class="btn sm" onclick="act('party',{n:0},'Party stopped')">Stop</button></div></div>
+    <div class="r"><div class="l"><b>Shabad Gurbani</b><small>Plays every shabad in SD folder <code>/03/</code> (<code>001.mp3</code>, <code>002.mp3</code>…) in turn, with a calm saffron light. Any dose or SOS stops it.</small></div><div class="btns"><button class="btn sm pri" onclick="act('party',{n:2},'Shabad playing')">Play</button><button class="btn sm" onclick="act('party',{n:0},'Shabad stopped')">Stop</button></div></div>
+    <div class="r"><div class="l"><b>Quieter at night</b></div><span class="sw"><input type="checkbox" data-k="quiet"><span></span></span></div>
+    <div class="r"><div class="l"><b>Starts</b></div><select data-k="quietFrom" class="hours"></select></div>
+    <div class="r"><div class="l"><b>Ends</b></div><select data-k="quietTo" class="hours"></select></div>
+    <div class="r"><div class="l"><b>Night volume</b></div><input type="range" min="0" max="30" data-k="quietVolume"></div>
+  </div>
+  <div class="sh"><h3>Screen</h3></div>
+  <div class="card rows">
+    <div class="r"><div class="l"><b>Brightness</b></div><input type="range" min="5" max="100" data-k="brightness"></div>
+    <div class="r"><div class="l"><b>Dim after</b></div><input type="number" min="15" max="3600" data-k="screenTimeout"><span class="unit">sec</span></div>
+    <div class="r"><div class="l"><b>Show a clock when idle</b><small>Otherwise the screen turns off</small></div><span class="sw"><input type="checkbox" data-k="clockSaver"><span></span></span></div>
+    <div class="r"><div class="l"><b>Invert colours</b><small>Only for "INV" screens where colours look wrong</small></div><span class="sw"><input type="checkbox" data-k="invert"><span></span></span></div>
+  </div>
+</section>
+
+<!-- time -->
+<section id="set-time">
+  <button class="back" onclick="go('set')"><svg class="i" viewBox="0 0 24 24" data-i="back"></svg>Settings</button>
+  <div class="ph"><h1>Date &amp; time</h1></div>
+  <div class="card rows">
+    <div class="r"><div class="l"><b>Time zone</b><small id="tzHint"></small></div><select id="tzSel" style="max-width:220px"></select></div>
+    <div class="r" id="tzCustomRow" style="display:none"><div class="l"><b>POSIX TZ string</b><small>e.g. <code>PKT-5</code></small></div><input id="tzCustom" style="width:160px"></div>
+    <div class="r"><div class="l"><b>Dispenser clock</b><small id="devClock"></small></div><button class="btn sm" onclick="syncTime(1)">Set from this phone</button></div>
+  </div>
+</section>
+
+<!-- wifi -->
+<section id="set-wifi">
+  <button class="back" onclick="go('set')"><svg class="i" viewBox="0 0 24 24" data-i="back"></svg>Settings</button>
+  <div class="ph"><h1>Wi-Fi</h1><p id="wifiNow"></p></div>
+  <div class="card">
+    <div class="row"><b class="grow">Networks nearby</b><button class="btn sm" id="scanBtn" onclick="scan()">Scan</button></div>
+    <div id="nets" style="margin:8px -10px"></div>
+    <label class="fld"><span>Network name</span><input id="wSsid" autocomplete="off"></label>
+    <label class="fld"><span>Password</span><input id="wPass" type="password" autocomplete="off"></label>
+    <button class="btn pri block" style="margin-top:16px" onclick="joinWifi()">Connect</button>
+  </div>
+  <div class="sh"><h3>Backup network</h3></div>
+  <div class="card">
+    <p class="small muted" style="margin:0 0 12px">Used when the main network is out of range, for example a phone hotspot.</p>
+    <label class="fld"><span>Name</span><input data-k="ssid2" autocomplete="off"></label>
+    <label class="fld"><span>Password</span><input data-k="pass2" type="password" autocomplete="off"></label>
+  </div>
+</section>
+
+<!-- security -->
+<section id="set-sec">
+  <button class="back" onclick="go('set')"><svg class="i" viewBox="0 0 24 24" data-i="back"></svg>Settings</button>
+  <div class="ph"><h1>Security</h1></div>
+  <div class="sh"><h3>On the dispenser</h3></div>
+  <div class="card rows">
+    <div class="r"><div class="l"><b>Screen PIN</b><small>4–6 digits · empty = none</small></div><input data-k="pin" type="password" inputmode="numeric" maxlength="6" style="width:120px"></div>
+    <div class="r"><div class="l"><b>Ask for the PIN to dispense by hand</b></div><span class="sw"><input type="checkbox" data-k="pinDispense"><span></span></span></div>
+    <div class="r"><div class="l"><b>Ask for the PIN for settings</b></div><span class="sw"><input type="checkbox" data-k="pinSettings"><span></span></span></div>
+  </div>
+  <div class="sh"><h3>This web app</h3></div>
+  <div class="card">
+    <label class="fld"><span>Password</span><input data-k="webPass" type="password" autocomplete="new-password"><small class="hint">User name <b>admin</b>. Leave empty to keep the app open to anyone on your Wi-Fi.</small></label>
+  </div>
+</section>
+
+<!-- firmware & backup -->
+<section id="set-sys">
+  <button class="back" onclick="go('set')"><svg class="i" viewBox="0 0 24 24" data-i="back"></svg>Settings</button>
+  <div class="ph"><h1>Firmware &amp; backup</h1></div>
+  <div class="card" id="devInfo"></div>
+  <div class="sh"><h3>Update</h3></div>
+  <div class="card">
+    <p class="small muted" style="margin:0 0 12px">Upload the <code>-update.bin</code> file. Settings and history are kept. If the new firmware keeps crashing, the dispenser goes back to this one by itself.</p>
+    <div class="row wrap"><input type="file" id="fw" accept=".bin" class="grow"><button class="btn pri" onclick="upload()">Update</button></div>
+    <div class="upbar"><i id="fwProg"></i></div>
+  </div>
+  <div class="sh"><h3>Backup</h3></div>
+  <div class="card"><div class="btns">
+    <a class="btn" href="/api/backup"><svg class="i" viewBox="0 0 24 24" data-i="down"></svg>Download backup</a>
+    <label class="btn"><svg class="i" viewBox="0 0 24 24" data-i="refresh"></svg>Restore…<input type="file" id="restore" accept=".json" hidden></label>
+  </div></div>
+  <div class="sh"><h3>Reset</h3></div>
+  <div class="card rows">
+    <div class="r"><div class="l"><b>Restart</b><small>Settings are kept</small></div><button class="btn sm" onclick="restart()">Restart</button></div>
+    <div class="r"><div class="l"><b>Factory reset</b><small>Erases all settings, schedules and history</small></div><button class="btn sm soft-dng" onclick="factory()">Erase</button></div>
+  </div>
+  <details class="adv"><summary>Developer: API &amp; Home Assistant</summary>
+  <div class="card small">
+    The original API still works, so the <a href="https://github.com/demrios-de/Pill-Dispenser-Integration-for-Home-Assistant" target="_blank" rel="noopener">Home Assistant integration</a> keeps working: <code>/dispense</code> <code>/dismiss</code> <code>/dropout?tray=1</code> <code>/fix?tray=1</code> <code>/tr_trig?id=1</code>…<br><br>
+    JSON API: <code>GET /api/status</code>, <code>GET /api/history?days=30</code>, <code>POST /api/action?cmd=due|taken|snooze|skip|dispense|msg|sos|sos_clear&amp;tray=1</code>.
+  </div></details>
+</section>
+</main>
+
+<nav class="tabs" id="nav"><div class="in">
+  <button data-t="home" class="on"><span class="ib"><svg class="i" viewBox="0 0 24 24" data-i="home"></svg></span>Today<span class="badge" id="badge"></span></button>
+  <button data-t="sched"><span class="ib"><svg class="i" viewBox="0 0 24 24" data-i="clock"></svg></span>Schedule</button>
+  <button data-t="hist"><span class="ib"><svg class="i" viewBox="0 0 24 24" data-i="chart"></svg></span>History</button>
+  <button data-t="set"><span class="ib"><svg class="i" viewBox="0 0 24 24" data-i="sliders"></svg></span>Settings</button>
+</div></nav>
+<div class="savebar" id="savebar"><span class="grow">Unsaved changes</span><button class="btn ghost" onclick="loadCfg()">Discard</button><button class="btn pri" onclick="saveCfg()">Save</button></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div class="scrim" id="scrim"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const IC={home:'<path d="M3.5 10.2 12 3.5l8.5 6.7V19a1.5 1.5 0 0 1-1.5 1.5h-4v-6h-6v6H5A1.5 1.5 0 0 1 3.5 19z"/>',
+clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',chart:'<path d="M4 20h16M7 16.5v-5M12 16.5V6.5M17 16.5v-8"/>',
+sliders:'<path d="M4 6.5h9M17 6.5h3M4 12h3M11 12h9M4 17.5h11M19 17.5h1"/><circle cx="15" cy="6.5" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17.5" r="2"/>',
+bell:'<path d="M6 9.5a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15.5 6 9.5M10 20.5a2 2 0 0 0 4 0"/>',check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+x:'<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',down:'<path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/>',plus:'<path d="M12 5v14M5 12h14"/>',minus:'<path d="M5 12h14"/>',
+refresh:'<path d="M19.5 10.5A7.7 7.7 0 0 0 5.4 7M4.5 3.5V7.5h4M4.5 13.5A7.7 7.7 0 0 0 18.6 17M19.5 20.5v-4h-4"/>',
+help:'<circle cx="12" cy="12" r="8.5"/><path d="M9.7 9.6a2.4 2.4 0 0 1 4.6.9c0 1.6-2.3 2.1-2.3 3.6M12 16.8h.01"/>',
+alert:'<path d="M12 4 2.8 19.5h18.4zM12 10v4.5M12 17.2h.01"/>',send:'<path d="M4.5 12 20 4.5l-4.3 15.2-3.7-6.3zM12 13.4 20 4.5"/>',
+trash:'<path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13"/>',chev:'<path d="M9.5 6l6 6-6 6"/>',back:'<path d="M14.5 6l-6 6 6 6"/>',
+wifi:'<path d="M2.5 9.2a14 14 0 0 1 19 0M5.6 12.6a9.4 9.4 0 0 1 12.8 0M8.7 15.9a4.8 4.8 0 0 1 6.6 0M12 19.2h.01"/>',
+lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
+vol:'<path d="M4 9.5h3.5l4.5-4v13l-4.5-4H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
+shield:'<path d="M12 3.5 5 6v5.5c0 4.5 3 8 7 9.5 4-1.5 7-5 7-9.5V6z"/><path d="M9 12l2 2 4-4"/>',
+globe:'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.4 3.5 5.4 3.5 8.5s-1.1 6.1-3.5 8.5c-2.4-2.4-3.5-5.4-3.5-8.5S9.6 5.9 12 3.5"/>',
+chip:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9.5 2.5V6M14.5 2.5V6M9.5 18v3.5M14.5 18v3.5M2.5 9.5H6M2.5 14.5H6M18 9.5h3.5M18 14.5h3.5"/>',
+tray:'<path d="M3.5 8.2 12 4l8.5 4.2v7.6L12 20l-8.5-4.2z"/><path d="M3.5 8.2 12 12.4l8.5-4.2M12 12.4V20"/>',
+cup:'<path d="M5 6.5h14l-1.6 12.2a1.6 1.6 0 0 1-1.6 1.3H8.2a1.6 1.6 0 0 1-1.6-1.3z"/><path d="M9.5 11h5"/>',
+phone:'<path d="M5.2 3.8h3.3l1.9 4.8-2.4 1.5a11 11 0 0 0 5.9 5.9l1.5-2.4 4.8 1.9v3.3a1.6 1.6 0 0 1-1.6 1.6A16.4 16.4 0 0 1 3.6 5.4a1.6 1.6 0 0 1 1.6-1.6z"/>',
+link:'<path d="M10 13.5a4.5 4.5 0 0 0 6.4.4l2.8-2.8a4.5 4.5 0 0 0-6.4-6.4l-1.3 1.3M14 10.5a4.5 4.5 0 0 0-6.4-.4l-2.8 2.8a4.5 4.5 0 0 0 6.4 6.4l1.3-1.3"/>',
+power:'<path d="M12 3.5v8M7 6.6a7.5 7.5 0 1 0 10 0"/>',locate:'<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22"/>',
+print:'<path d="M7 9V3.5h10V9M7 17H4.5V10a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1v7H17M7 14h10v6.5H7z"/>',
+file:'<path d="M14 3.5H6.5v17h11V7zM14 3.5V7h3.5M12 10.5v6M9.5 14l2.5 2.5 2.5-2.5"/>',
+tg:'<path d="M20.5 4.5 3 11.3l5.7 1.9 2 6 3.1-3.7 4.7 3.5z"/><path d="M8.7 13.2l9.2-6.4"/>',
+wa:'<path d="M4.5 19.5l1.2-3.8a7.8 7.8 0 1 1 2.7 2.6z"/><path d="M9.3 9.1c.3 2.6 2.4 4.9 5.4 5.6l1-1.3-1.7-.9-.8.8c-.9-.4-1.9-1.4-2.3-2.3l.8-.8-.9-1.7z"/>',
+msg:'<path d="M4.5 5h15v11H9.5l-5 4z"/>',
+spark:'<path d="M11 3.5l1.9 5.1 5.1 1.9-5.1 1.9L11 17.5l-1.9-5.1L4 10.5l5.1-1.9z"/><path d="M18.5 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>',
+camera:'<path d="M4 8h3.2l1.8-2.5h6L16.8 8H20a1 1 0 0 1 1 1v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>',
+play:'<path d="M8 5.5v13l10.5-6.5z"/>',user:'<circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>'};
+const ico=n=>`<svg class="i" viewBox="0 0 24 24">${IC[n]||''}</svg>`;
+const COLORS=['#E5484D','#D6409F','#8E4EC6','#3E63DD','#12A5B8','#30A46C','#D9A400','#F07A1A'];
+const DEF_NAMES=['Red','Magenta','Violet','Blue','Cyan','Green','Yellow','Orange'];
+const EV={1:'Dose due',2:'Dispensed',3:'Taken',4:'Skipped',5:'Missed',6:'Snoozed',7:'Extra dose given',8:'Taken early',9:'Tray refilled',10:'Not confirmed',11:'Family alerted',12:'Restarted',13:'SOS pressed'};
+const EVK={1:'due',3:'ok',4:'bad',5:'bad',8:'ok',10:'due',11:'due',13:'bad'};
+const EVI={1:'bell',2:'down',3:'check',4:'x',5:'x',6:'clock',7:'plus',8:'check',9:'refresh',10:'help',11:'bell',13:'alert'};
+const WD=[1,2,3,4,5,6,0],WDL=['M','T','W','T','F','S','S'],DAYN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const QUICK=['Please call me','Drink a glass of water','I will visit you today','Time for a short walk','Love you'];
+const TZ=[["UTC","UTC0",["UTC","Etc/UTC"]],["London, Dublin","GMT0IST,M3.5.0/1,M10.5.0",["Europe/London","Europe/Dublin"]],["Lisbon","WET0WEST,M3.5.0/1,M10.5.0",["Europe/Lisbon"]],
+["Paris, Berlin, Rome, Madrid","CET-1CEST,M3.5.0,M10.5.0/3",["Europe/Paris","Europe/Berlin","Europe/Rome","Europe/Madrid","Europe/Amsterdam","Europe/Brussels","Europe/Vienna","Europe/Stockholm","Europe/Oslo","Europe/Copenhagen","Europe/Warsaw","Europe/Prague","Europe/Zurich"]],
+["Athens, Helsinki, Kyiv","EET-2EEST,M3.5.0/3,M10.5.0/4",["Europe/Athens","Europe/Helsinki","Europe/Kiev","Europe/Kyiv","Europe/Bucharest","Europe/Sofia"]],["Cairo","EET-2EEST,M4.5.5/0,M10.5.4/24",["Africa/Cairo"]],
+["Johannesburg","SAST-2",["Africa/Johannesburg"]],["Lagos","WAT-1",["Africa/Lagos"]],["Nairobi","EAT-3",["Africa/Nairobi"]],["Istanbul","<+03>-3",["Europe/Istanbul"]],["Moscow","MSK-3",["Europe/Moscow"]],
+["Riyadh, Kuwait, Doha","<+03>-3",["Asia/Riyadh","Asia/Kuwait","Asia/Qatar","Asia/Baghdad"]],["Tehran","<+0330>-3:30",["Asia/Tehran"]],["Dubai, Muscat","<+04>-4",["Asia/Dubai","Asia/Muscat"]],
+["Karachi, Lahore","PKT-5",["Asia/Karachi"]],["India","IST-5:30",["Asia/Kolkata","Asia/Calcutta"]],["Kathmandu","<+0545>-5:45",["Asia/Kathmandu"]],["Dhaka","<+06>-6",["Asia/Dhaka"]],
+["Bangkok, Jakarta, Hanoi","<+07>-7",["Asia/Bangkok","Asia/Jakarta","Asia/Ho_Chi_Minh"]],["Singapore, Kuala Lumpur, Manila","<+08>-8",["Asia/Singapore","Asia/Kuala_Lumpur","Asia/Manila"]],["China","CST-8",["Asia/Shanghai"]],
+["Hong Kong","HKT-8",["Asia/Hong_Kong"]],["Tokyo","JST-9",["Asia/Tokyo"]],["Seoul","KST-9",["Asia/Seoul"]],["Perth","AWST-8",["Australia/Perth"]],["Adelaide","ACST-9:30ACDT,M10.1.0,M4.1.0/3",["Australia/Adelaide"]],
+["Brisbane","AEST-10",["Australia/Brisbane"]],["Sydney, Melbourne","AEST-10AEDT,M10.1.0,M4.1.0/3",["Australia/Sydney","Australia/Melbourne"]],["Auckland","NZST-12NZDT,M9.5.0,M4.1.0/3",["Pacific/Auckland"]],
+["Honolulu","HST10",["Pacific/Honolulu"]],["Anchorage","AKST9AKDT,M3.2.0,M11.1.0",["America/Anchorage"]],["Los Angeles, Vancouver","PST8PDT,M3.2.0,M11.1.0",["America/Los_Angeles","America/Vancouver"]],
+["Denver, Edmonton","MST7MDT,M3.2.0,M11.1.0",["America/Denver","America/Edmonton"]],["Phoenix","MST7",["America/Phoenix"]],["Chicago, Winnipeg","CST6CDT,M3.2.0,M11.1.0",["America/Chicago","America/Winnipeg"]],
+["Mexico City","CST6",["America/Mexico_City"]],["New York, Toronto","EST5EDT,M3.2.0,M11.1.0",["America/New_York","America/Toronto","America/Detroit"]],["Bogota, Lima","<-05>5",["America/Bogota","America/Lima"]],
+["Halifax","AST4ADT,M3.2.0,M11.1.0",["America/Halifax"]],["Santiago","<-04>4<-03>,M9.1.6/24,M4.1.6/24",["America/Santiago"]],["St. John's","NST3:30NDT,M3.2.0,M11.1.0",["America/St_Johns"]],
+["São Paulo, Buenos Aires","<-03>3",["America/Sao_Paulo","America/Argentina/Buenos_Aires"]]];
+
+let st=null,cfg=null,hist=[],dirty=false,lastHist=0,histDays=30,today={n:0,g:0,items:[]},fails=0;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const hm=t=>{const d=new Date(t*1000);return pad(d.getHours())+':'+pad(d.getMinutes())};
+const rel=s=>{s=Math.max(0,s);if(s<60)return'now';const m=Math.round(s/60);if(m<60)return m+' min';const h=Math.floor(s/3600),r=Math.round(s%3600/60);return h+' h'+(r?' '+r+' min':'')};
+const mins=m=>m<60?m+' min':m%60?Math.floor(m/60)+' h '+m%60+' min':m/60+(m===60?' hour':' hours');
+const dkey=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const myName=()=>lsGet('myName')||'Family';
+const named=()=>{const s=cfg||st;if(!s)return false;const p=s.tray[0].person;return!!s.people[p]&&s.people[p]!==DEF_NAMES[p]};
+const pname=()=>named()?(cfg||st).people[(cfg||st).tray[0].person]:'the patient';
+const slotNote=s=>cfg&&cfg.tray[0].slots[s]?cfg.tray[0].slots[s].note||'':'';
+function setHtml(el,h){if(el._h!==h){el.innerHTML=h;el._h=h}}
+function fillIcons(root=document){root.querySelectorAll('svg[data-i]').forEach(s=>{s.innerHTML=IC[s.dataset.i]||'';s.removeAttribute('data-i')})}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2800)}
+async function api(p,o){const r=await fetch(p,o);let j=null;try{j=await r.json()}catch(e){}if(!r.ok&&r.status!==202)throw new Error(j&&j.msg||r.statusText||'Request failed');return j}
+async function act(cmd,args={},okMsg){const q=new URLSearchParams({cmd,...args});try{const j=await api('/api/action?'+q,{method:'POST'});toast(j&&j.msg&&j.msg!=='ok'?j.msg:okMsg||'Done');setTimeout(poll,500);setTimeout(()=>loadHist(true),2500);return true}catch(e){toast(e.message);return false}}
+function whenText(t){const d=new Date(t*1000),n=new Date(),y=new Date();y.setDate(n.getDate()-1);
+  return dkey(d)===dkey(n)?'today at '+hm(t):dkey(d)===dkey(y)?'yesterday at '+hm(t):d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})+' at '+hm(t)}
+function daysText(m){if(m===127)return'Every day';if(m===62)return'Weekdays';if(m===65)return'Weekends';if(!m)return'No days picked';return WD.filter(d=>m>>d&1).map(d=>DAYN[d]).join(', ')}
+
+// ---------- sheets ----------
+let sheetRes=null;
+function sheet(h){$('#sheet').innerHTML=h;fillIcons($('#sheet'));$('#scrim').classList.add('on')}
+function closeSheet(v=false){$('#scrim').classList.remove('on');if(sheetRes){const r=sheetRes;sheetRes=null;r(v)}}
+$('#scrim').onclick=e=>{if(e.target.id==='scrim')closeSheet()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+function ask(title,text,ok='OK',danger=false){return new Promise(res=>{sheetRes=res;
+  sheet(`<h2>${esc(title)}</h2><p>${esc(text)}</p><div class="btns"><button class="btn lg" onclick="closeSheet(false)">Cancel</button><button class="btn lg ${danger?'dng':'pri'}" onclick="closeSheet(true)">${esc(ok)}</button></div>`)})}
+
+// ---------- navigation ----------
+function cur(){const s=$('main>section.on');return s?s.id:'home'}
+function go(id){
+  const sec=id&&document.getElementById(id);if(!sec||sec.parentElement.tagName!=='MAIN')id='home';
+  const top=id.startsWith('set')?'set':id;
+  $$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===top));
+  $$('main>section').forEach(s=>s.classList.toggle('on',s.id===id));
+  history.replaceState(null,'','#'+id);scrollTo(0,0);
+  document.body.classList.toggle('live',id==='live');
+  if(id==='hist')renderHist();if(top==='set')renderSet();if(id==='live')liveStart();
+}
+$('#nav').onclick=e=>{const b=e.target.closest('button');if(b)go(b.dataset.t)};
+addEventListener('scroll',()=>$('#top').classList.toggle('sc',scrollY>4),{passive:true});
+
+// ---------- live status ----------
+function setConn(on){const c=$('#conn');c.className='conn '+(on?'on':'off');c.lastElementChild.textContent=on?'Online':'Offline'}
+async function poll(){
+  try{st=await api('/api/status');fails=0;setConn(true)}catch(e){if(++fails>=2)setConn(false);renderNotes();return}
+  // no internet time yet, or the dispenser's clock has drifted: take the phone's (phones keep accurate time)
+  if(!poll.synced&&(!st.timeOk||Math.abs(st.now-Date.now()/1000)>120)){poll.synced=1;syncTime(st.timeOk?1:0)}
+  render();
+}
+function render(){
+  if(!st)return;
+  const d=new Date(st.now*1000);
+  $('#todayDate').textContent=st.timeOk?d.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'})+' · '+hm(st.now):'Clock not set yet';
+  $('#badge').style.display=st.sos||st.mode==='alert'?'block':'none';
+  renderNotes();renderToday();renderHero();renderTray();renderMsg();renderSetup();renderChannels();
+  if(cur().startsWith('set'))renderSet();if(cur()==='live')renderLive();
+}
+function renderNotes(){
+  let h='';
+  if(fails>=2)h+=`<div class="note bad">${ico('wifi')}<div class="grow"><b>Can't reach the dispenser</b><span class="small">Check that this phone is on the same Wi-Fi and the dispenser is on.</span></div></div>`;
+  else if(st){
+    if(!st.timeOk)h+=`<div class="note">${ico('clock')}<div class="grow"><b>The clock isn't set</b><span class="small">Set it from this phone so reminders work.</span></div><button class="btn sm" onclick="syncTime(1)">Set clock</button></div>`;
+    const z=phoneTz();
+    if(cfg&&z>=0&&TZ[z][1]!==cfg.tz)h+=`<div class="note">${ico('globe')}<div class="grow"><b>Time zone doesn't match</b><span class="small">The dispenser is on ${esc(cfg.tzName||cfg.tz)} time, this phone is in ${esc(TZ[z][0])}.</span></div><button class="btn sm" onclick="useTz(${z})">Use ${esc(TZ[z][0].split(',')[0])}</button></div>`;
+    if(st.demo){const s=Math.max(0,st.demo-st.now);h+=`<div class="note" style="background:var(--brand-soft)">${ico('play')}<div class="grow"><b>Test dose ${s?'in '+s+' s':'starting…'}</b><span class="small">The alarm will ring on the dispenser.</span></div><button class="btn sm" onclick="demo(0)">Cancel</button></div>`}
+    if(st.party==2)h+=`<div class="note" style="background:#fbe3c4;color:#4a2a05">${ico('vol')}<div class="grow"><b>Shabad is playing</b><span class="small">Gurbani with a calm saffron light. A dose or SOS stops it straight away.</span></div><button class="btn sm" onclick="act('party',{n:0},'Shabad stopped')">Stop</button></div>`;
+    else if(st.party)h+=`<div class="note" style="background:linear-gradient(90deg,#f6d6ff,#d6f0ff,#fff2c7);color:#222">${ico('vol')}<div class="grow"><b>Party mode is on</b><span class="small">Music and disco lights. A dose or SOS stops it straight away.</span></div><button class="btn sm" onclick="act('party',{n:0},'Party stopped')">Stop</button></div>`;
+    if(st.safe)h+=`<div class="note bad">${ico('alert')}<div class="grow"><b>Safe mode</b><span class="small">The dispenser restarted after repeated problems and turned networking off. Dispensing still works. Restart it to try again.</span></div></div>`;
+  }
+  setHtml($('#notes'),h);
+}
+function renderHero(){
+  const h=$('#hero'),t=st.tray[0],P=esc(pname());let c='hero',x='';
+  if(st.sos){c+=' sos';
+    x=`<div class="eb"><span class="dotp"></span>Emergency<span class="pill">${hm(st.sos.at)}</span></div>
+    <div class="ttl">${P} pressed SOS</div>
+    <div class="sub">${st.sos.ack?esc(st.sos.ack)+' is on the way.':'Everyone on the alert list has been told.'}</div>
+    <div class="acts"><button class="btn lg" onclick="act('sos_clear',{},'Marked as handled')">${ico('check')}Mark as handled</button></div>`;
+  }else if((st.mode==='alert'||st.mode==='snoozed')&&t.st===1){c+=' due';
+    const late=st.now-t.due,note=slotNote(t.slot);
+    x=`<div class="eb"><span class="dotp"></span>${st.mode==='snoozed'?'Snoozed':'Due now'}<span class="pill">${late>=60?rel(late)+' late':'on time'}</span></div>
+    <div class="ttl">${P}'s ${hm(t.due)} dose</div>
+    <div class="sub"><b>${esc(t.name)}</b>${note?' · '+esc(note):''}</div>
+    <div class="acts"><button class="btn lg pri" onclick="act('due',{},'Dispensing…')">${ico('down')}Dispense now</button><button class="btn" onclick="act('snooze',{},'Snoozed')">Snooze</button><button class="btn" onclick="skip()">Skip dose</button></div>`;
+  }else if(st.mode==='dispensing'){
+    x=`<div class="eb">Working</div><div class="ttl"><span class="spin"></span>Dispensing…</div><div class="sub">The pills will be in the cup in a few seconds.</div>`;
+  }else if(st.mode==='ready'||t.st===3){c+=' ready';
+    x=`<div class="eb">${ico('cup')}In the cup</div><div class="ttl">Pills are ready</div><div class="sub">${t.st===3?`Waiting for ${P} to confirm on the dispenser.`:'Ready to take.'}</div>
+    ${t.st===3?`<div class="acts"><button class="btn lg pri" onclick="act('taken',{},'Marked as taken')">${ico('check')}Mark as taken</button></div>`:''}`;
+  }else if(!t.alerts){
+    x=`<div class="eb">Reminders off</div><div class="ttl">Dispensing by hand only</div><div class="sub">Turn on reminders to get an alarm at each dose time.</div>
+    <div class="acts"><button class="btn pri" onclick="manual()">Dispense now</button><button class="btn" onclick="go('sched')">Set dose times</button></div>`;
+  }else if(st.next){
+    const nd=new Date(st.next.t*1000),td=new Date(st.now*1000),tm=new Date(td);tm.setDate(td.getDate()+1);
+    const when=dkey(nd)===dkey(td)?'in '+rel(st.next.t-st.now):dkey(nd)===dkey(tm)?'Tomorrow':nd.toLocaleDateString(undefined,{weekday:'long'});
+    const note=slotNote(st.next.slot);
+    const prog=today.n?`<div class="prog"><div class="segs">${today.items.map(i=>`<i class="${i.done?'ok':i.k==='bad'?'bad':i.k==='due'?'due':''}"></i>`).join('')}</div><span>${today.g} of ${today.n} taken today</span></div>`:'';
+    x=`<div class="eb">Next dose<span class="pill">${when}</span></div><div class="big num">${hm(st.next.t)}</div>
+    <div class="sub"><b>${esc(t.name)}</b>${note?' · '+esc(note):` for ${P}`}</div>${prog}`;
+  }else x=`<div class="eb">Schedule</div><div class="ttl">No dose times yet</div><div class="sub">Add the times ${P} takes medicine to get reminders.</div><div class="acts"><button class="btn lg pri" onclick="go('sched')">Set up the schedule</button></div>`;
+  h.className=c;setHtml(h,x);
+  if(cur()==='live'){const l=$('#lvHero');l.className=c;setHtml(l,x)}
+}
+async function skip(){if(await ask('Skip this dose?','The pills stay in the tray and the dose is recorded as skipped.','Skip dose',true))act('skip',{},'Dose skipped')}
+function todayItems(){
+  if(!cfg||!st||!st.timeOk)return[];
+  const t=cfg.tray[0];if(!t.alerts)return[];
+  const now=new Date(st.now*1000),wd=now.getDay(),key=dkey(now),nowM=now.getHours()*60+now.getMinutes(),live=st.tray[0];
+  const outs=doseOutcomes(hist).filter(d=>d.day===key&&d.tray===1),items=[];
+  t.slots.forEach((s,si)=>{if(!s.on||!(s.days>>wd&1))return;
+    const o=outs.find(d=>d.slot===si),m=s.h*60+s.m;let k='',ic='clock',lab='Upcoming',done=false;
+    if(live.slot===si&&live.st===1){k='due';ic='bell';lab='Due now'}
+    else if(live.slot===si&&live.st===2){k='due';ic='down';lab='Dispensing'}
+    else if(live.slot===si&&live.st===3){k='ok';ic='cup';lab='In the cup'}
+    else if(o){if(o.good){k='ok';ic='check';done=true;lab=(o.res==='early'?'Early ':o.res==='dispensed'?'Given ':'Taken ')+hm(o.at)}
+      else if(o.res==='unconfirmed'){k='due';ic='help';lab='Not confirmed'}else{k='bad';ic='x';lab=o.res==='skipped'?'Skipped':'Missed'}}
+    else if(m<nowM)lab='No record';
+    items.push({m,s,k,ic,lab,done})});
+  return items.sort((a,b)=>a.m-b.m);
+}
+function renderToday(){
+  const items=todayItems();today={n:items.length,g:items.filter(i=>i.done).length,items};
+  $('#todayAside').textContent=items.length?`${today.g} of ${today.n} taken`:'';
+  const name=cfg?esc(cfg.tray[0].name):'';
+  setHtml($('#today'),!st.timeOk?'<div class="empty">Set the clock to see today\'s doses.</div>':!cfg?'<div class="empty">Loading…</div>':
+    items.length?items.map(i=>`<div class="dose"><span class="t num">${pad(i.s.h)}:${pad(i.s.m)}</span><span class="st ${i.k}">${ico(i.ic)}</span><span class="m"><b>${name}</b>${i.s.note?`<small>${esc(i.s.note)}</small>`:''}</span><span class="rt ${i.k}">${i.lab}</span></div>`).join('')
+    :`<div class="empty">${cfg.tray[0].alerts?'No doses scheduled today.':'Reminders are off.'}</div>`);
+}
+function renderTray(){
+  const t=st.tray[0],cap=st.cap,stock=Math.max(0,t.stock),empty=stock<=0,low=!empty&&t.days>=0&&t.days<=(cfg?cfg.lowStockDays:3);
+  const by=t.days>=0?new Date((st.now+t.days*86400)*1000).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}):'';
+  const segs=cap<=60?`<div class="comp ${empty?'empty':low?'low':''}" style="grid-template-columns:repeat(${cap},1fr)">${Array.from({length:cap},(_,i)=>`<i class="${i<stock?'f':''}"></i>`).join('')}</div>`:`<div class="bar"><i style="width:${stock/cap*100}%"></i></div>`;
+  const kv=empty?'<b style="color:var(--red)">Empty</b>Refill now':t.days<0?'':low?`<b style="color:var(--amber)">${t.days} day${t.days===1?'':'s'} left</b>Refill by ${by}`:`<b>${t.days} days</b>Refill by ${by}`;
+  setHtml($('#tray'),`<div class="tray-top"><div class="grow"><div class="lbl">${esc(t.name)}</div><span class="n num">${stock}</span><span class="of"> of ${cap} doses left</span></div><div class="kv">${kv}</div></div>${segs}
+    ${st.servoOk===false?`<div class="note bad">${ico('alert')}<div class="grow"><b>Servo board not found</b><span class="small">Check the base board cable and power.</span></div></div>`:''}
+    <div class="btns"><button class="btn pri" onclick="manual()">${ico('down')}Dispense now</button><button class="btn" onclick="refillSheet()">${ico('refresh')}Refill</button></div>
+    ${t.last?`<div class="small muted" style="margin-top:12px">Last dispensed ${whenText(t.last)}</div>`:''}`);
+}
+async function manual(){
+  const t=st.tray[0];
+  if(!await ask('Dispense a dose now?',`${t.name} for ${pname()}. Use this for an extra or a missed dose.`,'Dispense'))return;
+  try{await api('/api/action?cmd=dispense&tray=1',{method:'POST'});toast('Dispensing…');setTimeout(poll,500)}
+  catch(e){if(await ask('Are you sure?',e.message,'Dispense anyway',true))act('dispense',{tray:1,force:1},'Dispensing…')}
+}
+function refillSheet(){
+  const cap=st?st.cap:30;
+  sheet(`<h2>Refill the tray</h2><p>Takes about a minute.</p><ol class="steps-l">
+    <li><div><b>Fill it</b><span>Open the lid and put one dose in each compartment.</span></div></li>
+    <li><div><b>Line it up</b><span>Close the lid. The empty compartment should sit over the cup opening.</span>
+      <div class="btns" style="margin-top:10px"><button class="btn sm" onclick="act('align',{tray:1},'Aligning…')">Align ½ step</button><button class="btn sm" onclick="act('advance',{tray:1,n:1},'Moving…')">Next compartment</button></div></div></li>
+    <li><div><b>Count</b><span>How many doses are in the tray now?</span></div></li></ol>
+    <div class="stepper"><button class="btn" onclick="rf(-1)" aria-label="Fewer">${ico('minus')}</button><output id="rfN" class="num">${cap}</output><button class="btn" onclick="rf(1)" aria-label="More">${ico('plus')}</button></div>
+    <div class="btns"><button class="btn lg" onclick="closeSheet()">Cancel</button><button class="btn lg pri" onclick="rfSave()">Save</button></div>`);
+}
+function rf(d){const o=$('#rfN'),cap=st?st.cap:60;o.textContent=Math.max(0,Math.min(cap,+o.textContent+d))}
+function rfSave(){const n=+$('#rfN').textContent;closeSheet();act('refill',{tray:1,n},`Tray refilled: ${n} doses`)}
+
+// ---------- messages ----------
+function renderMsg(){
+  $('#msgHd').textContent=`Message ${pname()}'s screen`;
+  $('#myName').textContent=myName();
+  const m=st.msg;
+  setHtml($('#mstate'),!m?`<span class="small muted">It appears full-screen on the dispenser with a chime. You'll see here when it's been read.</span>`:
+    `<span class="st ${m.read?'ok':''}">${ico(m.read?'check':'clock')}</span><span class="grow"><b>${m.read?'Read at '+hm(m.read):'Delivered '+hm(m.at)+' · not read yet'}</b><small class="muted">“${esc(m.text)}” · ${esc(m.from)}</small></span>`);
+}
+async function sendMsg(text){
+  text=(text??$('#msgText').value).trim();if(!text){$('#msgText').focus();return}
+  if(await act('msg',{text,from:myName()},'Sent to the screen'))$('#msgText').value='';
+}
+function nameSheet(){
+  sheet(`<h2>Your name</h2><p>Shown on the dispenser with messages you send from this phone.</p><label class="fld" style="margin-top:16px"><input id="nmIn" maxlength="20" value="${esc(lsGet('myName')||'')}" placeholder="e.g. Ahmed"></label>
+  <div class="btns"><button class="btn lg" onclick="closeSheet()">Cancel</button><button class="btn lg pri" onclick="lsSet('myName',$('#nmIn').value.trim());closeSheet();renderMsg()">Save</button></div>`);
+  setTimeout(()=>$('#nmIn').focus(),50);
+}
+
+// ---------- setup checklist ----------
+function renderSetup(){
+  const el=$('#setup');if(!cfg||!st)return;const t=cfg.tray[0];
+  const steps=[[st.timeOk,'Set the dispenser clock','set-time'],[cfg.people[t.person]!==DEF_NAMES[t.person],"Add the patient's name",'sched'],
+    [t.name&&!/^Tray \d+$/.test(t.name),'Name the medicine','sched'],[t.alerts&&t.slots.some(x=>x.on),'Add dose times','sched'],[st.chan>0,'Connect a family alert','set-alerts']];
+  const done=steps.filter(x=>x[0]).length;
+  if(done===steps.length||lsGet('setupHide')){setHtml(el,'');return}
+  setHtml(el,`<div class="card" style="margin-top:10px"><div class="row"><b class="grow">Finish setting up</b><span class="small muted">${done} of ${steps.length}</span></div>
+  <div class="pbar"><i style="width:${done/steps.length*100}%"></i></div>
+  ${steps.map(([ok,txt,to])=>`<button class="step ${ok?'done':''}" ${ok?'disabled':`onclick="go('${to}')"`}><span class="c">${ok?ico('check'):''}</span><span class="grow">${txt}</span>${ok?'':ico('chev').replace('class="i"','class="i chev"')}</button>`).join('')}
+  <div class="row" style="justify-content:flex-end;margin-top:6px"><button class="linkbtn small" onclick="lsSet('setupHide',1);renderSetup()">Hide</button></div></div>`);
+}
+
+// ---------- history ----------
+async function loadHist(force){
+  if(!force&&Date.now()-lastHist<60000)return;
+  lastHist=Date.now();
+  try{hist=(await api('/api/history?days=95')).filter(e=>e[2]<=1)}catch(e){return}
+  if(st){renderToday();renderHero()}renderWeek();if(cur()==='hist')renderHist();
+}
+function doseOutcomes(ev){
+  const open={},out=[];
+  const res=(d,r,at)=>{d.res=r;d.at=at;d.good=['taken','early','dispensed'].includes(r)};
+  for(const [t,e,tray,slot,p] of ev){
+    if(slot===9&&e!==8)continue;const k=tray+'-'+slot,day=dkey(new Date(t*1000));
+    if(e===1){const d={day,tray,slot,p,t};open[k]=d;out.push(d)}
+    else if(e===8){const d={day,tray,slot,p,t};res(d,'early',t);out.push(d)}
+    else if([2,3,4,5,10].includes(e)){let d=open[k];if(!d){if(e!==5)continue;d={day,tray,slot,p,t};out.push(d)}
+      const r={2:'dispensed',3:'taken',4:'skipped',5:'missed',10:'unconfirmed'}[e];
+      if(!(d.res==='taken'&&r==='unconfirmed'))res(d,r,t);if(e!==2)delete open[k]}
+  }
+  return out.filter(d=>d.res);
+}
+const stats=ds=>{const n=ds.length,g=ds.filter(d=>d.good).length;return{n,g,pct:n?Math.round(g/n*100):null}};
+const pctCls=p=>p===null?'':p===100?'c-ok':p>=50?'c-part':'c-bad';
+const pctCol=p=>p===null?'inherit':p>=90?'var(--brand-text)':p>=70?'var(--amber)':'var(--red)';
+function renderWeek(){
+  if(!cfg)return;const doses=doseOutcomes(hist),s=stats(doses.filter(d=>d.t>=Date.now()/1000-7*86400)),days=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push({d,ss:stats(doses.filter(x=>x.day===dkey(d))),t:i===0})}
+  setHtml($('#week'),`<div class="week"><div><div class="pct num" style="color:${pctCol(s.pct)}">${s.pct===null?'–':s.pct+'%'}</div><div class="small muted">${s.n?s.g+' of '+s.n+' doses':'No doses yet'}</div></div>
+  <div class="wdays">${days.map(x=>`<div class="${x.t?'today':''}"><i class="${pctCls(x.ss.pct)}"></i>${'SMTWTFS'[x.d.getDay()]}</div>`).join('')}</div></div>`);
+}
+$('#range').onclick=e=>{const b=e.target.closest('button');if(!b)return;histDays=+b.dataset.v;$$('#range button').forEach(x=>x.classList.toggle('on',x===b));renderHist()};
+function renderHist(){
+  if(!cfg)return;
+  const since=Date.now()/1000-histDays*86400,doses=doseOutcomes(hist).filter(d=>d.t>=since),s=stats(doses);
+  const missed=doses.filter(d=>d.res==='missed').length,skipped=doses.filter(d=>d.res==='skipped').length;
+  let streak=0;{const by={};doses.forEach(d=>{(by[d.day]=by[d.day]||[]).push(d)});for(const k of Object.keys(by).sort().reverse()){if(by[k].every(d=>d.good))streak++;else break}}
+  $('#printHd').innerHTML=`<h1 style="margin:0 0 4px">Medication report</h1><p style="margin:0 0 16px">${esc(pname())} · ${esc(cfg.tray[0].name)} · last ${histDays} days · printed ${new Date().toLocaleDateString()}<br>Schedule: ${esc(st?st.tray[0].sched:'')}</p>`;
+  $('#kpi').innerHTML=`<div class="card"><small>Adherence</small><b class="num" style="color:${pctCol(s.pct)}">${s.pct===null?'–':s.pct+'%'}</b><span>${s.g} of ${s.n} doses</span></div>
+    <div class="card"><small>Perfect days</small><b class="num">${streak}</b><span>in a row</span></div>
+    <div class="card"><small>Missed</small><b class="num" style="color:${missed?'var(--red)':'inherit'}">${missed}</b><span>${skipped} skipped</span></div>`;
+  const cells=DAYN.map(d=>`<div class="h">${d[0]}</div>`),now=new Date(),first=new Date(now);first.setDate(now.getDate()-histDays+1);
+  for(let i=0;i<first.getDay();i++)cells.push('<div class="x"></div>');
+  for(let d=new Date(first);d<=now;d.setDate(d.getDate()+1)){const k=dkey(d),ss=stats(doses.filter(x=>x.day===k));cells.push(`<div class="${pctCls(ss.pct)}" title="${k}: ${ss.g}/${ss.n}">${d.getDate()}</div>`)}
+  $('#cal').innerHTML=cells.join('');
+  const rows=hist.filter(e=>e[0]>=since&&e[1]!==12).slice(-250).reverse();let html='',last='';
+  const td=dkey(new Date()),yd=(()=>{const y=new Date();y.setDate(y.getDate()-1);return dkey(y)})();
+  for(const [t,e] of rows){const d=new Date(t*1000),k=dkey(d);
+    if(k!==last){last=k;html+=`<div class="dayh">${k===td?'Today':k===yd?'Yesterday':d.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'short'})}</div>`}
+    html+=`<div class="dose"><span class="t num">${hm(t)}</span><span class="st ${EVK[e]||''}">${ico(EVI[e]||'clock')}</span><span class="m"><b style="font-weight:${e===13?700:500}">${EV[e]||'Event '+e}</b></span></div>`}
+  $('#events').innerHTML=html||'<div class="empty">Nothing recorded yet.</div>';
+}
+function exportCsv(){
+  const csv=['time,person,medicine,dose,event'].concat(hist.map(([t,e,tray,slot,p])=>[new Date(t*1000).toISOString(),p<8?cfg.people[p]:'',tray&&cfg.tray[tray-1]?cfg.tray[tray-1].name:'',slot===9||slot===255?'':slot+1,EV[e]].map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv.join('\n')],{type:'text/csv'}));a.download='pill-history.csv';a.click();
+}
+
+// ---------- config ----------
+async function loadCfg(){
+  cfg=await api('/api/config');dirty=false;$('#savebar').classList.remove('on');document.body.classList.remove('dirty');
+  renderSched();fillSettings();ntfyLink();renderAskChips();if(st)render();renderWeek();
+}
+function markDirty(){dirty=true;$('#savebar').classList.add('on');document.body.classList.add('dirty')}
+async function saveCfg(){
+  if(cfg.pin&&cfg.pin!=='********'&&!/^\d{4,6}$/.test(cfg.pin)){toast('The PIN must be 4 to 6 digits');return}
+  try{await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});toast('Saved');dirty=false;aiC=null;$('#savebar').classList.remove('on');document.body.classList.remove('dirty');setTimeout(loadCfg,900);setTimeout(poll,1000)}
+  catch(e){toast('Could not save: '+e.message)}
+}
+function renderSched(){
+  const t=cfg.tray[0],pi=t.person;
+  $('#medCard').innerHTML=`<label class="fld"><span>Medicine</span><input value="${esc(t.name)}" maxlength="22" placeholder="e.g. BP tablet" oninput="cfg.tray[0].name=this.value;markDirty()"></label>
+    <label class="fld"><span>Alarm sound</span><div class="row"><select onchange="cfg.tray[0].voice=+this.value;markDirty();renderSched()"><option value="0">Standard alarm</option>${[...Array(20)].map((_,v)=>`<option value="${v+1}" ${t.voice===v+1?'selected':''}>Voice ${v+1} (/01/${String(v+1).padStart(3,'0')}.mp3)</option>`).join('')}</select>
+    <button class="btn ic" onclick="act('sound',{voice:cfg.tray[0].voice||0,n:${t.voice?0:1}},'Playing')" aria-label="Play">${ico('vol')}</button></div></label>`;
+  $('#remSw').checked=t.alerts;
+  const on=t.slots.map((s,i)=>({s,i})).filter(x=>x.s.on).sort((a,b)=>a.s.h*60+a.s.m-(b.s.h*60+b.s.m));
+  $('#slots').innerHTML=!t.alerts?`<div class="card empty">Reminders are off. The dispenser only gives pills when someone taps <b>Dispense</b>.</div>`:
+    on.map(({s,i})=>`<div class="card"><div class="slot-hd"><input type="time" class="tbig num" value="${pad(s.h)}:${pad(s.m)}" onchange="setTime(${i},this.value)" aria-label="Dose time"><span class="slot-sum" id="sum${i}">${daysText(s.days)}</span><button class="btn ic out" onclick="delSlot(${i})" aria-label="Remove this dose time">${ico('trash')}</button></div>
+      <div class="days">${WD.map((d,j)=>`<button class="${s.days>>d&1?'on':''}" aria-pressed="${!!(s.days>>d&1)}" onclick="togDay(${i},${d},this)">${WDL[j]}</button>`).join('')}</div>
+      <input value="${esc(s.note||'')}" maxlength="40" placeholder="Instructions, e.g. 1 tablet after breakfast" oninput="cfg.tray[0].slots[${i}].note=this.value;markDirty()"></div>`).join('')
+    +(on.length<t.slots.length?`<button class="btn out block lg" style="margin-top:10px" onclick="addSlot()">${ico('plus')}Add a dose time</button>`:'')
+    +(on.length?'':`<div class="empty">No dose times yet.</div>`);
+  $('#patCard').innerHTML=`<label class="fld"><span>Name</span><input value="${esc(cfg.people[pi])}" maxlength="18" placeholder="e.g. Ammi" oninput="cfg.people[cfg.tray[0].person]=this.value;markDirty()"></label>
+    <div class="fld"><span>Light colour</span><div class="cpick">${COLORS.map((c,j)=>`<button class="${j===pi?'on':''}" style="background:${c}" aria-label="${DEF_NAMES[j]}" onclick="setColour(${j})">${ico('check')}</button>`).join('')}</div>
+    <small class="hint">The dispenser's lights glow this colour when it's time for pills.</small></div>`;
+}
+function setTime(i,v){const[a,b]=v.split(':');Object.assign(cfg.tray[0].slots[i],{h:+a,m:+b});markDirty()}
+function togDay(i,d,el){const s=cfg.tray[0].slots[i];s.days^=1<<d;el.classList.toggle('on');el.setAttribute('aria-pressed',el.classList.contains('on'));$('#sum'+i).textContent=daysText(s.days);markDirty()}
+function delSlot(i){cfg.tray[0].slots[i].on=false;markDirty();renderSched()}
+function addSlot(){const t=cfg.tray[0],i=t.slots.findIndex(s=>!s.on);if(i<0)return;
+  const used=t.slots.filter(s=>s.on).map(s=>s.h),h=[8,14,20,22,12,18].find(x=>!used.includes(x))??12;
+  Object.assign(t.slots[i],{on:true,h,m:0,days:127,note:t.slots[i].note||''});markDirty();renderSched()}
+function setColour(j){const t=cfg.tray[0];if(j===t.person)return;cfg.people[j]=cfg.people[t.person];t.person=j;markDirty();renderSched()}
+function fillSettings(){
+  $$('[data-k]').forEach(el=>{const v=cfg[el.dataset.k];if(el.type==='checkbox')el.checked=!!v;else el.value=v??'';
+    el.oninput=el.onchange=()=>{const k=el.dataset.k;cfg[k]=el.type==='checkbox'?el.checked:(el.type==='number'||el.type==='range'||el.classList.contains('hours'))?+el.value:el.value;markDirty();if(k==='ntfyTopic')ntfyLink()}});
+  const tm=(id,hk,mk)=>{const e=$(id);e.value=pad(cfg[hk])+':'+pad(cfg[mk]);e.onchange=()=>{const[a,b]=e.value.split(':');cfg[hk]=+a;cfg[mk]=+b;markDirty()}};
+  tm('#dailyAt','dailyH','dailyM');tm('#checkinAt','checkinH','checkinM');
+  const sel=$('#tzSel'),idx=TZ.findIndex(z=>z[1]===cfg.tz);
+  sel.innerHTML=TZ.map((z,i)=>`<option value="${i}">${z[0]}</option>`).join('')+'<option value="c">Other (POSIX string)…</option>';
+  sel.value=idx>=0?idx:'c';$('#tzCustom').value=cfg.tz;$('#tzCustomRow').style.display=idx>=0?'none':'flex';
+  const iana=Intl.DateTimeFormat().resolvedOptions().timeZone,sug=TZ.find(z=>z[2].includes(iana));
+  $('#tzHint').innerHTML=sug&&sug[1]!==cfg.tz?`This phone is in ${esc(sug[0])}. <button class="linkbtn" onclick="pickTz(${TZ.indexOf(sug)})">Use it</button>`:'Daylight saving is automatic';
+  sel.onchange=()=>{if(sel.value==='c')$('#tzCustomRow').style.display='flex';else pickTz(+sel.value)};
+  $('#tzCustom').oninput=e=>{cfg.tz=e.target.value;cfg.tzName='Custom';markDirty()};
+}
+function phoneTz(){try{const iana=Intl.DateTimeFormat().resolvedOptions().timeZone;return TZ.findIndex(z=>z[2].includes(iana))}catch(e){return-1}}
+async function useTz(i){
+  try{await api('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tz:TZ[i][1],tzName:TZ[i][0]})});
+    cfg.tz=TZ[i][1];cfg.tzName=TZ[i][0];toast('Time zone set to '+TZ[i][0]);renderNotes();if(!dirty)setTimeout(loadCfg,900)}
+  catch(e){toast('Could not save: '+e.message)}
+}
+function pickTz(i){cfg.tz=TZ[i][1];cfg.tzName=TZ[i][0];$('#tzSel').value=i;$('#tzCustomRow').style.display='none';$('#tzHint').textContent='Daylight saving is automatic';markDirty()}
+$$('.hours').forEach(s=>s.innerHTML=[...Array(24)].map((_,h)=>`<option value="${h}">${pad(h)}:00</option>`).join(''));
+function syncTime(force){act('settime',{t:Math.floor(Date.now()/1000),force:force?1:0},force?'Clock set from this phone':undefined)}
+
+// ---------- alerts ----------
+const CH=[[1,'Telegram'],[4,'WhatsApp'],[2,'Push'],[8,'Voice call'],[16,'Webhook']];
+function renderChannels(){
+  $$('[data-st]').forEach(e=>{const on=st.chan&+e.dataset.st;e.className='tag'+(on?' on':'');e.textContent=on?'On':'Off'});
+  if(st.ntest&&st.ntest!==renderChannels.last){renderChannels.last=st.ntest;const r=$('#ntest');r.textContent=st.ntest;r.style.color=/sent|calling/i.test(st.ntest)?'var(--brand-text)':/fail|not set/i.test(st.ntest)?'var(--red)':'var(--muted)'}
+}
+function ntest(n){if(dirty){toast('Save your changes first');return}$('#ntest').textContent='Sending…';$('#ntest').style.color='var(--muted)';act('ntest',{n},'Test sent')}
+function genTopic(){const a='abcdefghjkmnpqrstuvwxyz23456789';let s='pilldisp-';for(let i=0;i<10;i++)s+=a[Math.floor(Math.random()*a.length)];cfg.ntfyTopic=s;$('#ntfyTopic').value=s;ntfyLink();markDirty()}
+function ntfyLink(){const t=cfg&&cfg.ntfyTopic,a=$('#ntfyLink');a.href=t?'https://ntfy.sh/'+encodeURIComponent(t):'#';a.style.display=t?'':'none'}
+async function sosDrill(){if(await ask('Start an SOS drill?','Everyone on the alert list gets a real SOS alert, including a voice call if it is set up.','Send SOS',true))act('sos',{},'SOS sent')}
+
+// ---------- settings ----------
+const sig=r=>r>-60?'Strong signal':r>-72?'Good signal':'Weak signal';
+function renderSet(){
+  if(!st||!cfg)return;
+  setHtml($('#devCard'),`<svg class="mark" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="var(--brand)"/><g transform="rotate(-45 16 16)"><rect x="5.5" y="11.5" width="21" height="9" rx="4.5" fill="#fff"/><path d="M16 11.5h6a4.5 4.5 0 0 1 0 9h-6z" fill="#9FDDBF"/></g></svg>
+    <div class="grow"><b>${named()?esc(pname())+"'s dispenser":'PillDispenser'}</b><small>v${esc(st.v)} · ${st.ssid?esc(st.ip):'setup hotspot'}</small></div>${st.safe?'<span class="tag warn">Safe mode</span>':st.ssid?`<span class="tag on">${sig(st.rssi)}</span>`:'<span class="tag warn">No Wi-Fi</span>'}`);
+  const on=CH.filter(([b])=>st.chan&b).map(x=>x[1]);
+  $('#sumAlerts').textContent=on.length?on.join(', '):'Not set up yet';
+  $('#sumRules').textContent=`Missed after ${mins(cfg.missAfter)} · `+(cfg.minGap?`${mins(cfg.minGap)} between doses`:'no overdose lock');
+  $('#sumTray').textContent=`${cfg.capacity} compartments · warn ${cfg.lowStockDays} days before empty`;
+  $('#sumSound').textContent=(cfg.mute?'Muted':`Volume ${Math.round(cfg.volume/30*100)}%`)+(cfg.quiet?' · quiet at night':'')+` · brightness ${cfg.brightness}%`;
+  $('#sumTime').textContent=(cfg.tzName||cfg.tz)+(st.timeOk?' · '+hm(st.now):' · clock not set');
+  $('#sumWifi').textContent=st.ssid?st.ssid:'Not connected'+(cfg.ssid2?' · backup set':'');
+  $('#sumSec').textContent=[cfg.pin?'Screen PIN on':'No screen PIN',cfg.webPass?'web password on':'web app open'].join(' · ');
+  $('#sumSys').textContent=`Version ${st.v}`;
+  $('#sumAi').textContent=st.ai?'On · scan prescriptions, ask in any language':'Not set up yet · free with Groq';
+  $('#wifiNow').textContent=st.ssid?`Connected to ${st.ssid} · ${sig(st.rssi).toLowerCase()}`:st.ap?`Not connected. Setup hotspot: ${st.apSsid||'on'}`:'Not connected';
+  if(st.team)$('#credits').innerHTML=`PillDispenser v${esc(st.v)} · made by <b>${esc(st.team)}</b><br>${esc(st.members||'')}`;
+  $('#devClock').textContent=st.timeOk?new Date(st.now*1000).toLocaleString(undefined,{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'Not set';
+  setHtml($('#devInfo'),`<div class="kgrid"><div><small>Firmware</small><b>v${esc(st.v)}</b></div><div><small>Address</small><b>${esc(st.ip)}</b></div>
+    <div><small>Name on network</small><b>${esc(st.host)}.local</b></div><div><small>Wi-Fi</small><b>${st.ssid?esc(st.ssid)+' ('+st.rssi+' dBm)':'not connected'}</b></div>
+    <div><small>Running for</small><b>${rel(st.up)}</b></div><div><small>Free memory</small><b>${Math.round(st.heap/1024)} KB</b></div>
+    <div><small>Made by</small><b>${esc(st.team||'')}</b></div><div><small>Team</small><b>${esc(st.members||'')}</b></div>
+    <div><small>Servo board</small><b style="color:${st.servoOk?'inherit':'var(--red)'}">${st.servoOk?'Connected':'Not found'}</b></div><div><small>Mode</small><b>${st.safe?'Safe mode':'Normal'}</b></div></div>`);
+}
+async function restart(){if(await ask('Restart the dispenser?','It comes back in about 10 seconds. Settings and history are kept.','Restart'))act('reboot',{},'Restarting…')}
+async function factory(){if(await ask('Erase everything?','All settings, schedules and history are deleted. This cannot be undone.','Continue',true)&&prompt('Type RESET to confirm')==='RESET')act('factory',{},'Erasing…')}
+async function scan(){
+  $('#scanBtn').disabled=true;$('#nets').innerHTML='<div class="small muted" style="padding:10px">Scanning…</div>';
+  for(let i=0;i<20;i++){const r=await fetch('/api/wifi/scan');if(r.status===200){const n=await r.json();n.sort((a,b)=>b.rssi-a.rssi);
+    $('#nets').innerHTML=n.map(x=>`<div class="net" data-s="${esc(x.ssid)}" onclick="$('#wSsid').value=this.dataset.s;$$('.net').forEach(e=>e.classList.remove('sel'));this.classList.add('sel');$('#wPass').focus()">${ico(x.open?'wifi':'lock')}<span class="grow">${esc(x.ssid)}</span><span class="small muted">${sig(x.rssi).split(' ')[0]}</span></div>`).join('')||'<div class="small muted" style="padding:10px">No networks found</div>';break}
+    await new Promise(r=>setTimeout(r,1000))}
+  $('#scanBtn').disabled=false;
+}
+async function joinWifi(){
+  const ssid=$('#wSsid').value.trim();if(!ssid)return toast('Pick a network first');
+  try{await api('/api/wifi',{method:'POST',body:new URLSearchParams({ssid,pass:$('#wPass').value})});toast('Connecting… the dispenser shows its new address')}catch(e){toast(e.message)}
+}
+function upload(){
+  const f=$('#fw').files[0];if(!f)return toast('Choose the .bin file first');
+  const x=new XMLHttpRequest(),fd=new FormData();fd.append('firmware',f,f.name);
+  x.upload.onprogress=e=>{$('#fwProg').style.width=(e.loaded/e.total*100)+'%'};
+  x.onload=()=>{if(x.status===200){toast('Updated. Restarting…');setTimeout(()=>location.reload(),12000)}else toast('Update failed: '+x.responseText)};
+  x.onerror=()=>toast('Upload failed');x.open('POST','/api/update');x.send(fd);
+}
+$('#restore').onchange=async e=>{const f=e.target.files[0];if(!f)return;const txt=await f.text();
+  try{JSON.parse(txt);await api('/api/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:txt});toast('Backup restored');setTimeout(loadCfg,1000)}catch(err){toast('Not a valid backup: '+err.message)}};
+
+// ---------- AI assistant (Groq, called straight from this phone) ----------
+const GROQ='https://api.groq.com/openai/v1';
+let aiC=null;
+async function aiCreds(quiet){
+  if(aiC)return aiC;
+  try{const c=await api('/api/ai');if(c&&c.key)return aiC=c}catch(e){if(!quiet)toast(e.message);return null}
+  if(!quiet)sheet(`<h2>Set up the AI assistant</h2><p>It needs a free Groq key. Setting it up takes about a minute.</p><div class="btns"><button class="btn lg" onclick="closeSheet()">Later</button><button class="btn lg pri" onclick="closeSheet();go('set-ai')">Set it up</button></div>`);
+  return null;
+}
+async function groq(model,messages,{json=false,max=1024}={}){
+  const c=await aiCreds();if(!c)throw new Error('The AI assistant is not set up yet.');
+  const body={model,messages,temperature:.2,max_completion_tokens:max};if(json)body.response_format={type:'json_object'};
+  let r;
+  try{r=await fetch(GROQ+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+c.key},body:JSON.stringify(body)})}
+  catch(e){throw new Error('This phone has no internet right now. The AI needs internet (mobile data is fine).')}
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){const m=j.error&&j.error.message||r.statusText;
+    throw new Error(r.status===401?'The Groq key was refused. Check it in Settings → AI assistant.':r.status===429?'The free AI limit is used up for the moment. Try again in a minute.':r.status===404||/model/i.test(m)?`The model "${model}" isn't available. Pick another in Settings → AI assistant → Models.`:m)}
+  const t=(j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content||'').trim();
+  if(!t)throw new Error('The AI sent an empty answer. Please try again.');
+  return t;
+}
+const md=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^#+\s*/gm,'').replace(/^\s*[-*]\s+/gm,'• ').replace(/\n/g,'<br>');
+const answerBox=(html,note='Written by AI from the dispenser\'s data. It can make mistakes.')=>`<div class="answer"><div class="who">${ico('spark')}Assistant</div>${html}<small>${note}</small></div>`;
+const thinking=t=>`<div class="answer thinking"><span class="spin"></span>${t}</div>`;
+async function aiTest(){
+  if(dirty){toast('Save your changes first');return}
+  aiC=null;const r=$('#aiRes');r.style.color='var(--muted)';r.textContent='Testing…';
+  const c=await aiCreds(true);if(!c){r.style.color='var(--red)';r.textContent='No key saved yet.';return}
+  try{const x=await fetch(GROQ+'/models',{headers:{Authorization:'Bearer '+c.key}});const j=await x.json();
+    if(!x.ok)throw new Error(x.status===401?'Key refused. Copy it again from console.groq.com/keys.':(j.error&&j.error.message)||x.statusText);
+    const ids=(j.data||[]).map(m=>m.id).sort();$('#aiModels').innerHTML=ids.map(i=>`<option value="${esc(i)}">`).join('');
+    const okT=ids.includes(c.model),okV=ids.includes(c.vision);
+    r.style.color=okT&&okV?'var(--brand-text)':'var(--amber)';
+    r.textContent=okT&&okV?'Connected. Questions and photo scanning are ready.':`Connected, but ${!okT?'the text model':'the photo model'} isn't available. Open Models below and pick another.`}
+  catch(e){r.style.color='var(--red)';r.textContent=/fetch/i.test(e.message)?'No internet on this phone.':e.message}
+}
+// --- prescription scan ---
+function shrink(file,max=1280){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);
+  img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.85))};
+  img.onerror=()=>rej(new Error('That file is not a photo this phone can read.'));img.src=u})}
+const SCAN_PROMPT=`Read this prescription or medicine package and reply with JSON only, in exactly this shape:
+{"ok":true,"reason":"","medicine":"short name and strength, e.g. Amlodipine 5 mg","doses":[{"time":"HH:MM (24 h)","note":"how many and when, e.g. 1 tablet after breakfast","days":"daily"}],"duration":"","warnings":"","confidence":"high"}
+Rules: "days" is daily, weekdays, weekends, or a list like Mon,Wed,Fri. Turn common shorthand into times: OD or once daily = 08:00; BD = 08:00 and 20:00; TDS = 08:00, 14:00, 20:00; QID = 08:00, 12:00, 16:00, 20:00; HS or at bedtime = 22:00; 1-0-1 = morning and night; 1-1-1 = morning, afternoon and night; 0-0-1 = night. Morning 08:00, afternoon 14:00, evening 18:00, night 21:00 unless the paper says otherwise. At most 4 doses a day. If there are several medicines, use the first and name the others in "warnings". "confidence" is high, medium or low. If the photo is not a prescription or medicine pack, or cannot be read, set "ok" to false and explain in "reason".`;
+let scanRes=null;
+async function scanFile(inp){
+  const f=inp.files[0];inp.value='';if(!f)return;
+  if(!await aiCreds())return;
+  sheet(`<h2>Reading the photo…</h2><p>This takes a few seconds.</p>${thinking('The AI is reading the prescription')}`);
+  try{const url=await shrink(f);
+    const out=await groq(aiC.vision,[{role:'user',content:[{type:'text',text:SCAN_PROMPT},{type:'image_url',image_url:{url}}]}],{json:true,max:1200});
+    const m=out.match(/\{[\s\S]*\}/);if(!m)throw new Error('The AI did not return a schedule. Try a clearer photo.');
+    showScan(JSON.parse(m[0]),url)}
+  catch(e){sheet(`<h2>Couldn't read that</h2><p>${esc(e.message)}</p><div class="btns"><button class="btn lg pri" onclick="closeSheet()">OK</button></div>`)}
+}
+function dayMask(s){s=String(s||'daily').toLowerCase();if(/daily|every|^$/.test(s))return 127;if(/weekday/.test(s))return 62;if(/weekend/.test(s))return 65;
+  let m=0;DAYN.forEach((d,i)=>{if(s.includes(d.toLowerCase()))m|=1<<i});return m||127}
+function showScan(r,img){
+  if(!r.ok){sheet(`<h2>Couldn't read that</h2><p>${esc(r.reason||'Try a sharper photo in good light, with the whole prescription in view.')}</p><div class="btns"><button class="btn lg pri" onclick="closeSheet()">OK</button></div>`);return}
+  scanRes=r;const ds=(r.doses||[]).slice(0,4),conf=String(r.confidence||'medium').toLowerCase();
+  sheet(`<h2>Check this schedule</h2><p>Read by AI from your photo. Compare it with the prescription before you save.</p>
+  ${img?`<img class="thumb" src="${img}" alt="">`:''}
+  <div class="row" style="margin:10px 0 2px"><span class="tag ${conf==='high'?'on':'warn'}">${conf==='high'?'Clear read':conf==='low'?'Unsure, check carefully':'Check the details'}</span>${r.duration?`<span class="tag">${esc(r.duration)}</span>`:''}</div>
+  <label class="fld" style="margin-top:12px"><span>Medicine</span><input id="scMed" maxlength="22" value="${esc(r.medicine||'')}"></label>
+  <div class="fld" style="margin-top:14px"><span>Dose times</span>${ds.length?ds.map((d,i)=>`<div class="dose-edit"><input type="time" id="scT${i}" value="${esc(/^\d{1,2}:\d{2}$/.test(d.time||'')?d.time.padStart(5,'0'):'08:00')}"><input id="scN${i}" maxlength="40" value="${esc(d.note||'')}" placeholder="Instructions"></div>
+    <small class="hint" style="margin:2px 0 6px">${esc(daysText(dayMask(d.days)))}</small>`).join(''):'<p class="small muted">No dose times found. You can add them by hand.</p>'}</div>
+  ${r.warnings?`<div class="note" style="margin-top:12px">${ico('alert')}<div class="grow small">${esc(r.warnings)}</div></div>`:''}
+  <div class="btns"><button class="btn lg" onclick="closeSheet()">Cancel</button><button class="btn lg pri" onclick="applyScan()">Use this</button></div>`);
+}
+function applyScan(){
+  const r=scanRes,t=cfg.tray[0],ds=(r.doses||[]).slice(0,4);
+  t.name=($('#scMed').value||t.name).slice(0,22);t.alerts=true;
+  t.slots.forEach((s,i)=>{if(i<ds.length){const[h,m]=($('#scT'+i).value||'08:00').split(':');Object.assign(s,{on:true,h:+h,m:+m,days:dayMask(ds[i].days),note:$('#scN'+i).value.slice(0,40)})}else s.on=false});
+  closeSheet();markDirty();renderSched();go('sched');toast('Schedule filled in. Check it, then tap Save.');
+}
+// --- ask ---
+function aiContext(){
+  const t=cfg.tray[0],s=st.tray[0],fmt=d=>new Date(d*1000).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  const outs=doseOutcomes(hist).filter(d=>d.t>=st.now-14*86400).map(d=>{const sl=t.slots[d.slot];return`${fmt(d.t)} (${sl?pad(sl.h)+':'+pad(sl.m)+' dose':'extra dose'}): ${d.res}${d.at&&d.res!=='missed'?' at '+hm(d.at):''}`});
+  const other=hist.filter(e=>e[0]>=st.now-14*86400&&[7,9,11,13].includes(e[1])).map(e=>`${fmt(e[0])}: ${EV[e[1]]}`);
+  return `Now: ${fmt(st.now)}
+Patient: ${pname()}. Medicine: ${t.name}. Schedule: ${s.sched||'none'}.
+Instructions: ${t.slots.filter(x=>x.on&&x.note).map(x=>pad(x.h)+':'+pad(x.m)+' '+x.note).join('; ')||'none'}
+Today: ${today.items.map(i=>pad(i.s.h)+':'+pad(i.s.m)+' '+i.lab).join('; ')||'no doses today'}
+Live state: ${st.sos?'SOS active since '+hm(st.sos.at):''} ${st.mode==='alert'?'a dose is due right now':st.mode==='ready'?'pills are in the cup, not yet confirmed':st.mode==='snoozed'?'alarm snoozed':'idle'}. Next dose: ${st.next?fmt(st.next.t):'none'}.
+Tray: ${s.stock} of ${st.cap} doses left, about ${s.days>=0?s.days+' days':'unknown'}. Last dispensed: ${s.last?fmt(s.last):'never'}.
+Safety: ${cfg.minGap?cfg.minGap+' min minimum between doses':'no overdose lock'}; missed after ${cfg.missAfter} min.
+Last message to the screen: ${st.msg?`"${st.msg.text}" from ${st.msg.from}, ${st.msg.read?'read at '+hm(st.msg.read):'not read yet'}`:'none'}.
+Dose results, last 14 days:
+${outs.join('\n')||'none'}
+Other events: ${other.join('; ')||'none'}`;
+}
+const ASK_SYS=`You are the assistant built into a smart pill dispenser. You answer the family's questions using only the dispenser data below.
+Reply in the same language and script as the question (Hindi, Punjabi, Urdu, English or Hinglish). Be warm and short: at most 4 sentences, plain text. If the data does not answer the question, say so. Never suggest changing doses and give no medical advice; for medical questions suggest asking their doctor.`;
+async function ask(q){
+  q=(q??$('#askText').value).trim();if(!q){$('#askText').focus();return}
+  if(!cfg||!st)return;if(!await aiCreds())return;
+  $('#askText').value=q;$('#askOut').innerHTML=thinking('Thinking…');
+  try{const a=await groq(aiC.model,[{role:'system',content:ASK_SYS+'\n\n'+aiContext()},{role:'user',content:q}]);$('#askOut').innerHTML=answerBox(md(a))}
+  catch(e){$('#askOut').innerHTML=`<div class="note bad" style="margin:14px 0 0">${ico('alert')}<div class="grow small">${esc(e.message)}</div></div>`}
+}
+function renderAskChips(){
+  const n=named()?pname():'they';
+  setHtml($('#askChips'),[`Did ${n} take today's pills?`,'When will the pills run out?','How did this week go?','Kya aaj ki dawai le li?'].map(q=>`<button class="chip" onclick="ask(this.textContent)">${esc(q)}</button>`).join(''));
+}
+async function aiSummary(){
+  if(!cfg||!st)return;if(!await aiCreds())return;
+  $('#sumOut').innerHTML=thinking('Writing the summary…');
+  try{const a=await groq(aiC.model,[{role:'system',content:`You write a short medication report for a family. Use only the data. Three short paragraphs: 1) how the doses went this period, with numbers; 2) any pattern worth noticing (e.g. late evening doses, missed weekends) or "no worrying pattern"; 3) one practical tip. Under 110 words, plain text, no medical advice.`},{role:'user',content:aiContext()}],{max:1200});
+    $('#sumOut').innerHTML=answerBox(md(a))}
+  catch(e){$('#sumOut').innerHTML=`<div class="note bad" style="margin:14px 0 0">${ico('alert')}<div class="grow small">${esc(e.message)}</div></div>`}
+}
+
+// ---------- demo & live dashboard ----------
+async function demo(s,fast){if(await act('demo',{n:s,force:fast?1:0},s?(fast?'Missed-dose demo starts in 30 s':'Test dose in 1 minute'):'Test dose cancelled')&&s&&cur()!=='live')go('home')}
+let liveEv=[],liveSeen=0,liveTimer=0;
+function liveStart(){clearInterval(liveTimer);liveSeen=0;liveTick();liveTimer=setInterval(()=>{if(cur()!=='live'){clearInterval(liveTimer);return}liveTick()},3000);render()}
+async function liveTick(){
+  try{const ev=(await api('/api/history?days=2')).filter(e=>e[1]!==12);const newest=ev.length?ev[ev.length-1][0]:0;
+    const fresh=liveSeen&&newest>liveSeen;liveEv=ev;renderFeed(fresh?liveSeen:Infinity);liveSeen=newest||1;if(fresh){loadHist(true)}}catch(e){}
+}
+function renderFeed(since){
+  const rows=liveEv.slice(-14).reverse();
+  $('#lvFeed').innerHTML=rows.map(([t,e])=>`<div class="ev ${t>since?'new':''}"><span class="t num">${hm(t)}</span><span class="st ${EVK[e]||''}">${ico(EVI[e]||'clock')}</span><span class="grow"><b style="font-weight:${e===13?700:600}">${EV[e]||'Event'}</b><br><span class="small muted">${whenText(t).replace(/ at \d\d:\d\d$/,'').replace(/^./,c=>c.toUpperCase())}</span></span></div>`).join('')||'<div class="empty">Waiting for activity…</div>';
+}
+function renderLive(){
+  if(!st)return;
+  $('#lvClock').textContent=hm(st.now);$('#lvName').textContent=named()?pname()+"'s dispenser":'PillDispenser';
+  setHtml($('#lvToday'),$('#today').innerHTML);
+  const doses=doseOutcomes(hist),s=stats(doses.filter(d=>d.t>=Date.now()/1000-7*86400)),t=st.tray[0];
+  setHtml($('#lvKpi'),`<div class="card"><small>Adherence, 7 days</small><b class="num" style="color:${pctCol(s.pct)}">${s.pct===null?'–':s.pct+'%'}</b></div>
+    <div class="card"><small>Taken today</small><b class="num">${today.g} / ${today.n}</b></div>
+    <div class="card"><small>Doses in the tray</small><b class="num" style="color:${t.stock<=0?'var(--red)':'inherit'}">${Math.max(0,t.stock)}</b></div>`);
+}
+
+// ---------- start ----------
+fillIcons();
+$('#quick').innerHTML=QUICK.map(q=>`<button class="chip" onclick="sendMsg(this.textContent)">${esc(q)}</button>`).join('');
+window.onbeforeunload=()=>dirty?'Unsaved changes':undefined;
+(async()=>{if(location.hash.length>1)go(location.hash.slice(1));try{await loadCfg()}catch(e){toast('Cannot load settings')}await poll();await loadHist(true);setInterval(poll,2000);setInterval(()=>loadHist(false),15000)})();
+</script>
+</body>
+</html>

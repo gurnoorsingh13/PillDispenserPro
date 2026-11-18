@@ -1,0 +1,11 @@
+# build output
+build/
+*.elf
+*.map
+# local screenshots and logs
+screens/
+*.log
+__pycache__/
+# never commit audio (copyright) or secrets
+sd-card/**/*.mp3
+*.env
